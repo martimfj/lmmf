@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 import client
+import server
 from PIL import ImageTk, Image
 
 class Janela_Principal():
