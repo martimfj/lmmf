@@ -19,12 +19,7 @@ import time
 #serialName = "/dev/tty.usbmodem1411" # Mac    (variacao de)
 serialName = "COM4"                  # Windows(variacao de)
 
-# contador main
-contador = 0
-
 def main(texto):
-    global contador
-    contador+= 1
 
     # Inicializa enlace
     com = enlace(serialName)
@@ -34,12 +29,7 @@ def main(texto):
 
     # Endereco da imagem a ser transmitida
     imageR = texto
-
     # Endereco da imagem a ser salva
-    stringA = "./imgs/recebida"
-    stringB = str(contador)
-    stringC = ".png"
-    imageW = stringA + stringB + stringC 
 
     # Log
     print("-------------------------")
@@ -52,7 +42,7 @@ def main(texto):
     print (" - {}".format(imageR))
     print("-------------------------")
     txBuffer = open(imageR, 'rb').read()
-    txLen    = len(txBuffer)
+    txLen    = 3093
     print(txLen)
 
     # Transmite imagem
@@ -66,9 +56,6 @@ def main(texto):
     # Atualiza dados da transmissão
     txSize = com.tx.getStatus()
     print ("Transmitido       {} bytes ".format(txSize))
-
-    # Fecha arquivo de imagem
-    f.close()
 
     # Encerra comunicação
     print("-------------------------")
