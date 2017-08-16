@@ -9,6 +9,8 @@
 
 # Importa pacote de tempo
 import time
+import sys
+import os
 
 # Threads
 import threading
@@ -97,8 +99,15 @@ class RX(object):
 
         This function blocks until the number of bytes is received
         """
+
         while(self.getBufferLen() < size):
+            sys.stdout.write(str(self.getBufferLen()) + "/" + str(size))
+            sys.stdout.write("\r")
+            sys.stdout.flush()
             time.sleep(0.05)
+
+        sys.stdout.write(str(self.getBufferLen()) + "/" + str(size))
+        sys.stdout.write("\r")
 
         return(self.getBuffer(size))
 

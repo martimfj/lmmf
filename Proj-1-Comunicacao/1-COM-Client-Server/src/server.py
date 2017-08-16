@@ -9,7 +9,7 @@
 
 from enlace import *
 import time
-import timeit
+
 
 
 # Serial Com Port
@@ -28,7 +28,7 @@ def main():
     com.enable()
 
     # Endereco da imagem a ser salva
-    imageW = "./imgs/recebida.png"
+    imageW = "./imgs/recebida.rar"
 
     # Log
     print("-------------------------")
@@ -38,10 +38,18 @@ def main():
 
     # Faz a recepção dos dados
     print ("Recebendo dados .... ")
-    rxBuffer, nRx = com.getData(3093)
+    tempBuffer1,nRx = com.getData(1)
+    inicio = time.time()
+    print("RECEBENDOOOOOOOOOOOOOOOOOO")
+    tempBuffer2, tx = com.getData(130180285)
 
+    rxBuffer = tempBuffer1 + tempBuffer2
+
+    print("temp buffer 1 = " , tempBuffer1)
+    print(type(tempBuffer2))
+
+    fim = time.time()
     # Inicia a contagem do tempo de transmissão
-    inicio = timeit.timeit()
 
     # log
     print ("Lido              {} bytes ".format(nRx))
@@ -52,10 +60,9 @@ def main():
     print (" - {}".format(imageW))
     f = open(imageW, 'wb')
     f.write(rxBuffer)
-
+    
     # Finaliza o tempo e calcula o tempo de transmissão
-    fim = timeit.timeit()
-    print("O tempo total para a transmissão dos dados foi de: {}".format(inicio - fim))
+    print("O tempo total para a transmissão dos dados foi de: {}".format(fim - inicio))
 
     # Fecha arquivo de imagem
     f.close()

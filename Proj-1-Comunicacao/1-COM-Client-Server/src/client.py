@@ -9,7 +9,6 @@
 
 from enlace import *
 import time
-import timeit
 
 
 # Serial Com Port
@@ -47,7 +46,7 @@ def main(texto):
     print(txLen)
 
     # Inicia a contagem do tempo de transmissão
-    inicio = timeit.timeit()
+    inicio = time.time()
 
     # Transmite imagem
     print("Transmitindo .... {} bytes".format(txLen))
@@ -63,7 +62,7 @@ def main(texto):
 
     # Finaliza o tempo e calcula o tempo de transmissão
     fim = timeit.timeit()
-    print("O tempo total para a transmissão dos dados foi de: {}".format(inicio - fim))
+    print("O tempo total para a transmissão dos dados foi de: {}".format(fim - inicio))
 
     # Encerra comunicação
     print("-------------------------")
