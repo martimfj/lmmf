@@ -45,11 +45,10 @@ def main(texto):
     txLen    = 3093
     print(txLen)
 
-    # Inicia a contagem do tempo de transmissão
-    inicio = time.time()
 
     # Transmite imagem
     print("Transmitindo .... {} bytes".format(txLen))
+    inicio = time.time()
     com.sendData(txBuffer)
 
     # espera o fim da transmissão

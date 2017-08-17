@@ -28,7 +28,7 @@ def main():
     com.enable()
 
     # Endereco da imagem a ser salva
-    imageW = "./imgs/recebida.rar"
+    imageW = "./imgs/recebida.png"
 
     # Log
     print("-------------------------")
@@ -39,18 +39,19 @@ def main():
     # Faz a recepção dos dados
     print ("Recebendo dados .... ")
     tempBuffer1,nRx = com.getData(1)
-    inicio = time.time()
-    print("RECEBENDOOOOOOOOOOOOOOOOOO")
-    tempBuffer2, tx = com.getData(130180285)
+    
+    inicio = time.time()  #inicia a contagem de tempo
+    
+    tempBuffer2, tx = com.getData(3092)
 
     rxBuffer = tempBuffer1 + tempBuffer2
 
     print("temp buffer 1 = " , tempBuffer1)
     print(type(tempBuffer2))
 
+    #finaliza contagem de tempo
     fim = time.time()
-    # Inicia a contagem do tempo de transmissão
-
+    
     # log
     print ("Lido              {} bytes ".format(nRx))
 
