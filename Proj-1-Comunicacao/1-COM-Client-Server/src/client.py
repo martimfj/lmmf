@@ -61,7 +61,7 @@ def main(texto):
     print ("Transmitido       {} bytes ".format(txSize))
 
     # Finaliza o tempo e calcula o tempo de transmissão
-    fim = timeit.timeit()
+    fim = time.time()
     print("O tempo total para a transmissão dos dados foi de: {}".format(fim - inicio))
 
     # Encerra comunicação
