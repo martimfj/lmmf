@@ -10,7 +10,7 @@ class Janela_Principal():
 
         self.window = tk.Tk()
         self.window.geometry("250x400+100+100")
-        self.window.title("Face Recoginition")
+        self.window.title("LMMF Protocol")
         self.window.configure(background = 'white')
         self.window.resizable(False, False)
 
