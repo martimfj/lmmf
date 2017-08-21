@@ -9,6 +9,7 @@
 
 # Importa pacote de tempo
 import time
+import parser
 
 # Construct Struct
 from construct import *
@@ -52,8 +53,15 @@ class enlace(object):
     ################################
     def sendData(self, data):
         """ Send data over the enlace interface
-        """
-        self.tx.sendBuffer(data)
+        """#######python med
+        
+        #Construção do pack
+        self.StructEop()
+        self.StructHead()
+        
+        #Envio do arquivo
+        pack = self.buildDataPacket(data)
+        self.tx.sendBuffer(pack)
 
     def getData(self, size):
         """ Get n data over the enlace interface
@@ -61,3 +69,39 @@ class enlace(object):
         """
         data = self.rx.getNData(size)
         return(data, len(data))
+
+
+    #Define a estrutura do head
+    def StructHead(self):
+        self.headStart = 0xFF
+        self.headStruct = Struct("start" / Int16ub,
+                                 "size"/ Int16ub)
+        
+    #Implementa o head
+    def buildHead(self,dataLen):
+        head = self.headStruct.build(dict(
+                                start = self.headStart,
+                                size = dataLen))    
+        return head
+
+    #Define a estrutura do eop
+    def StructEop(self):
+        self.endStart = 0xFF
+        self.endStruct = Struct("c1" / Int8ub,
+                        "c2"/ Int8ub,
+                        "c3" / Int8ub,
+                        "c4" /Int8ub)
+    #Implementa o eop
+    def buildEop(self):
+        end = self.endStruct.build(dict(
+                                c1 = 0x01,
+                                c2 = 0x02,
+                                c3 = 0x03,
+                                c4 = 0x04))
+        return end
+
+    def buildDataPacket(self,data):
+        pack = self.buildHead(len(data))
+        pack += data
+        pack += self.buildEop()
+        return pack
