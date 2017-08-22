@@ -53,8 +53,8 @@ class enlace(object):
     ################################
     def sendData(self, data):
         """ Send data over the enlace interface
-        """#######python med
-        
+        """
+
         #Construção do pack
         self.StructEop()
         self.StructHead()
@@ -63,13 +63,12 @@ class enlace(object):
         pack = self.buildDataPacket(data)
         self.tx.sendBuffer(pack)
 
-    def getData(self, size):
+    def getData(self):
         """ Get n data over the enlace interface
         Return the byte array and the size of the buffer
         """
-        data = self.rx.getPacket()
+        data = self.rx.unbuildDataPacket()
         return(data, len(data))
-
 
     #Define a estrutura do head
     def StructHead(self):

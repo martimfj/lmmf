@@ -36,19 +36,7 @@ def main():
 
     # Faz a recepção dos dados
     print ("Recebendo dados .... ")
-    tempBuffer1,nRx = com.getData(1)
-    
-    inicio = time.time()  #inicia a contagem de tempo
-    
-    tempBuffer2, tx = com.getData(649263)
-
-    rxBuffer = tempBuffer1 + tempBuffer2
-
-    print("temp buffer 1 = " , tempBuffer1)
-    print(type(tempBuffer2))
-
-    #finaliza contagem de tempo
-    fim = time.time()
+    tempBuffer,nRx = com.getData()
     
     # log
     print ("Lido              {} bytes ".format(nRx))
@@ -58,10 +46,10 @@ def main():
     print ("Salvando dados no arquivo :")
     print (" - {}".format(imageW))
     f = open(imageW, 'wb')
-    f.write(rxBuffer)
+    f.write(tempBuffer)
     
     # Finaliza o tempo e calcula o tempo de transmissão
-    print("O tempo total para a transmissão dos dados foi de: {}".format(fim - inicio))
+    #print("O tempo total para a transmissão dos dados foi de: {}".format(fim - inicio))
 
     # Fecha arquivo de imagem
     f.close()

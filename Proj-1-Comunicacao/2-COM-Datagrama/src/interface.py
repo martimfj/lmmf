@@ -39,20 +39,6 @@ class Janela_Principal():
         self.button_Reconhecimento.grid(row   = 3, column = 0)
         self.button_Reconhecimento.configure(command = self.sair)
         
-        '''
-        #Caixa de entrada       
-        self.userText = tk.StringVar()
-        self.myEntry = tk.Entry(self.window, textvariable = self.userText)
-        self.myEntry.grid(row = 4, column = 0)
-        
-        
-        def comp_dados(event):
-            global userText
-            print(self.userText.get()) 
-
-        self.myEntry.bind('<Return>', comp_dados)   
-        '''
-        
     #Loop do codigo
     def iniciar(self):
         self.window.mainloop()

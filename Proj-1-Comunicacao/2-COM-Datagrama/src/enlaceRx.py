@@ -39,7 +39,6 @@ class RX(object):
                 rxTemp, nRx = self.fisica.read(self.READLEN)
                 if (nRx > 0):
                     self.buffer += rxTemp
-                print(self.buffer)
                 time.sleep(0.001)
 
             #Recebe todos os pacotes, salva no buffer e fica varrendo o buffer em procura do EOP,
@@ -130,9 +129,9 @@ class RX(object):
             if eop != -1: #EOP existe na byteArray
                 packetHead = self.buffer.find(b'\x00\xff') #Procura pelo inicio do packet
                 headAndPayload = self.buffer[:eop] #Começo até EOP (Não inclui EOP)
-                size = int(self.fisica.decode(headAndPayload[2:4]), 16) #Posição 2 até 4 (Não inclui 4)
-                                                                        #Decode ASCII to Hex, Hex to Decimal
+                #size = int(self.fisica.decode(headAndPayload[2:4]), 16) #Posição 2 até 4 (Não inclui 4)
+                                                                     #Decode ASCII to Hex, Hex to Decimal
                 payload = headAndPayload[4:] #A partir do 4
-
                 self.packetFound = True
-                return(size, payload)
+
+                return payload
