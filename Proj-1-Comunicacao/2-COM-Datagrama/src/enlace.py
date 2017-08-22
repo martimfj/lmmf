@@ -53,11 +53,55 @@ class enlace(object):
     def sendData(self, data):
         """ Send data over the enlace interface
         """
-        self.tx.sendBuffer(data)
+                
+        #Construção do pack
+        self.StructEop()
+        self.StructHead()
+        
+        #Envio do arquivo
+        pack = self.buildDataPacket(data)
+        self.tx.sendBuffer(pack)
 
-    def getData(self, size):
+
+    def getData(self):
         """ Get n data over the enlace interface
         Return the byte array and the size of the buffer
         """
-        data = self.rx.getNData(size)
+        data = self.rx.unbuildDataPacket()
         return(data, len(data))
+
+
+    #Define a estrutura do head
+    def StructHead(self):
+        self.headStart = 0xFF
+        self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
+                                 "size"/ Int16ub)
+        
+    #Implementa o head
+    def buildHead(self,dataLen):
+        head = self.headStruct.build(dict(
+                                start = self.headStart,
+                                size = dataLen))    
+        return head
+
+    #Define a estrutura do eop
+    def StructEop(self):
+        self.endStart = 0xFF
+        self.endStruct = Struct("c1" / Int8ub,
+                                "c2"/ Int8ub,
+                                "c3" / Int8ub,
+                                "c4" /Int8ub)
+    #Implementa o eop
+    def buildEop(self):
+        end = self.endStruct.build(dict(
+                                c1 = 0x01,
+                                c2 = 0x02,
+                                c3 = 0x03,
+                                c4 = 0x04))
+        return end
+
+    def buildDataPacket(self,data):
+        pack = self.buildHead(len(data))
+        pack += data
+        pack += self.buildEop()
+        return pack

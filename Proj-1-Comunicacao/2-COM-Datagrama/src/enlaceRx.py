@@ -29,6 +29,7 @@ class RX(object):
         self.threadStop  = False
         self.threadMutex = True
         self.READLEN     = 1024
+        self.packetFound = False
 
     def thread(self):
         """ RX thread, to send data in parallel with the code
@@ -38,7 +39,6 @@ class RX(object):
                 rxTemp, nRx = self.fisica.read(self.READLEN)
                 if (nRx > 0):
                     self.buffer += rxTemp
-                print(self.buffer)
                 time.sleep(0.001)
 
     def threadStart(self):
@@ -119,3 +119,20 @@ class RX(object):
         self.buffer = b""
 
 
+    def unbuildDataPacket(self):
+        """ Desencapsula os dados do pacote, retornando dataLen e payload
+        """
+
+        while(self.packetFound == False):
+            #pr#int("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq")
+            eop = self.buffer.find(b'\x01\x02\x03\x04') #Procura sequência pela byteArray
+            if eop != -1: #EOP existe na byteArray
+                #print("qqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaqqqqqq")
+                packetHead = self.buffer.find(b'\x00\xff') #Procura pelo inicio do packet
+                headAndPayload = self.buffer[:eop] #Começo até EOP (Não inclui EOP)
+                # size = int(self.fisica.decode(headAndPayload[2:4]), 16) #Posição 2 até 4 (Não inclui 4)
+                                                                        #Decode ASCII to Hex, Hex to Decimal
+                payload = headAndPayload[4:] #A partir do 4
+
+                self.packetFound = True
+                return payload
