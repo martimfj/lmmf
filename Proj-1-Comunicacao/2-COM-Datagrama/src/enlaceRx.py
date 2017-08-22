@@ -12,6 +12,9 @@ import time
 import sys
 import os
 
+# Construct Struct
+from construct import *
+
 # Threads
 import threading
 
@@ -22,24 +25,28 @@ class RX(object):
     """
     
     def __init__(self, fisica):
-        """ Initializes the TX class
+        """ Initializes the RX class
         """
         self.fisica      = fisica
-        self.buffer      = bytes(bytearray())
+        self.buffer      = bytes(bytearray()) #buffer de bytes
         self.threadStop  = False
         self.threadMutex = True
         self.READLEN     = 1024
+        self.packetFound = False
 
     def thread(self):
         """ RX thread, to send data in parallel with the code
         """
         while not self.threadStop:
-            if(self.threadMutex == True):
+            if(self.threadMutex == True): #Mutex é um semafóro que determina quem ta manipulando o buffer.
                 rxTemp, nRx = self.fisica.read(self.READLEN)
                 if (nRx > 0):
                     self.buffer += rxTemp
                 print(self.buffer)
                 time.sleep(0.001)
+
+            #Recebe todos os pacotes, salva no buffer e fica varrendo o buffer em procura do EOP,
+            # manda os dados de head, eop e payload para o enlace tratar e montar tudo.
 
     def threadStart(self):
         """ Starts RX thread (generate and run)
@@ -102,13 +109,13 @@ class RX(object):
         """
 
         while(self.getBufferLen() < size):
-            sys.stdout.write(str(self.getBufferLen()) + "/" + str(size))
-            sys.stdout.write("\r")
-            sys.stdout.flush()
+            # sys.stdout.write(str(self.getBufferLen()) + "/" + str(size))
+            # sys.stdout.write("\r")
+            # sys.stdout.flush()
             time.sleep(0.05)
 
-        sys.stdout.write(str(self.getBufferLen()) + "/" + str(size))
-        sys.stdout.write("\r")
+        # sys.stdout.write(str(self.getBufferLen()) + "/" + str(size))
+        # sys.stdout.write("\r")
 
         return(self.getBuffer(size))
 
@@ -118,4 +125,17 @@ class RX(object):
         """
         self.buffer = b""
 
+    def unbuildDataPacket(self):
+        """ Desencapsula os dados do pacote, retornando dataLen e payload
+        """
+        while(self.packetFound == False):
+            eop = self.buffer.find(b'\x01\x02\x03\x04') #Procura sequência pela byteArray
+            if eop != -1: #EOP existe na byteArray
+                packetHead = self.buffer.find(b'\x00\xff') #Procura pelo inicio do packet
+                headAndPayload = self.buffer[:eop] #Começo até EOP (Não inclui EOP)
+                size = int(self.fisica.decode(headAndPayload[2:4]), 16) #Posição 2 até 4 (Não inclui 4)
+                                                                        #Decode ASCII to Hex, Hex to Decimal
+                payload = headAndPayload[4:] #A partir do 4
 
+                self.packetFound = True
+                return(size, payload)

@@ -67,14 +67,14 @@ class enlace(object):
         """ Get n data over the enlace interface
         Return the byte array and the size of the buffer
         """
-        data = self.rx.getNData(size)
+        data = self.rx.getPacket()
         return(data, len(data))
 
 
     #Define a estrutura do head
     def StructHead(self):
         self.headStart = 0xFF
-        self.headStruct = Struct("start" / Int16ub,
+        self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
                                  "size"/ Int16ub)
         
     #Implementa o head
@@ -88,9 +88,9 @@ class enlace(object):
     def StructEop(self):
         self.endStart = 0xFF
         self.endStruct = Struct("c1" / Int8ub,
-                        "c2"/ Int8ub,
-                        "c3" / Int8ub,
-                        "c4" /Int8ub)
+                                "c2"/ Int8ub,
+                                "c3" / Int8ub,
+                                "c4" /Int8ub)
     #Implementa o eop
     def buildEop(self):
         end = self.endStruct.build(dict(
