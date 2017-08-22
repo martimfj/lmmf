@@ -36,3 +36,8 @@ print(head[2:])
 print(binascii.hexlify(head[2:]))
 oi = binascii.hexlify(head[2:])
 print(int(oi, 16))
+
+
+# https://www.dotnetperls.com/bytes-python
+# https://construct.readthedocs.io/en/latest/basics.html
+# https://stackoverflow.com/questions/509211/explain-slice-notation
