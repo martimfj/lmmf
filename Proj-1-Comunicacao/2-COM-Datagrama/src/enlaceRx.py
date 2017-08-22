@@ -12,9 +12,6 @@ import time
 import sys
 import os
 
-# Construct Struct
-from construct import *
-
 # Threads
 import threading
 
