@@ -42,9 +42,8 @@ def main(texto):
     print (" - {}".format(imageR))
     print("-------------------------")
     txBuffer = open(imageR, 'rb').read()
-    txLen    = 2944773
+    txLen    = len(txBuffer)
     print(txLen)
-
 
     # Transmite imagem
     print("Transmitindo .... {} bytes".format(txLen))
