@@ -67,8 +67,8 @@ class enlace(object):
         """ Get n data over the enlace interface
         Return the byte array and the size of the buffer
         """
-        data = self.rx.unbuildDataPacket()
-        return(data, len(data))
+        data, size = self.rx.unbuildDataPacket()
+        return(data, len(data), size)
 
     #Define a estrutura do head
     def StructHead(self):
@@ -80,7 +80,7 @@ class enlace(object):
     def buildHead(self,dataLen):
         head = self.headStruct.build(dict(
                                 start = self.headStart,
-                                size = dataLen))    
+                                size = dataLen)) 
         return head
 
     #Define a estrutura do eop
@@ -101,6 +101,7 @@ class enlace(object):
 
     def buildDataPacket(self,data):
         pack = self.buildHead(len(data))
+        print(len(data))
         pack += data
         pack += self.buildEop()
         return pack

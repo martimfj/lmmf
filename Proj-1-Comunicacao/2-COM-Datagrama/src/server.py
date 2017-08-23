@@ -16,7 +16,7 @@ import time
 
 #serialName = "/dev/ttyACM0"           # Ubuntu (variacao de)
 #serialName = "/dev/tty.usbmodem1411" # Mac    (variacao de)
-serialName = "COM5"                  # Windows(variacao de)
+serialName = "COM4"                  # Windows(variacao de)
 
 def main():
     # Inicializa enlace
@@ -36,7 +36,7 @@ def main():
 
     # Faz a recepção dos dados
     print ("Recebendo dados .... ")
-    tempBuffer,nRx = com.getData()
+    tempBuffer, nRx, size = com.getData()
     
     # log
     print ("Lido              {} bytes ".format(nRx))
@@ -47,6 +47,13 @@ def main():
     print (" - {}".format(imageW))
     f = open(imageW, 'wb')
     f.write(tempBuffer)
+
+    print("-------------------------")
+    print ("Log de recebimento:")
+    print ("Tamanho do arquivo: {} ".format(size))
+    print ("Tamanho do arquivo recebido: {} ".format(nRx))
+    print ("Perdas: {} ".format(size-nRx))
+
     
     # Finaliza o tempo e calcula o tempo de transmissão
     #print("O tempo total para a transmissão dos dados foi de: {}".format(fim - inicio))

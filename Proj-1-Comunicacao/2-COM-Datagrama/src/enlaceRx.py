@@ -15,6 +15,8 @@ import os
 # Threads
 import threading
 
+import binascii
+
 # Class
 class RX(object):
     """ This class implements methods to handle the reception
@@ -129,9 +131,9 @@ class RX(object):
             if eop != -1: #EOP existe na byteArray
                 packetHead = self.buffer.find(b'\x00\xff') #Procura pelo inicio do packet
                 headAndPayload = self.buffer[:eop] #Começo até EOP (Não inclui EOP)
-                #size = int(self.fisica.decode(headAndPayload[2:4]), 16) #Posição 2 até 4 (Não inclui 4)
+                size = int(binascii.hexlify(headAndPayload[2:4]), 16) #Posição 2 até 4 (Não inclui 4)
                                                                      #Decode ASCII to Hex, Hex to Decimal
                 payload = headAndPayload[4:] #A partir do 4
                 self.packetFound = True
 
-                return payload
+                return(payload, size)
