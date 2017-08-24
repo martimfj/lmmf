@@ -35,9 +35,11 @@ OverHead =
 
 ## BaudRate
 O baudRate é a taxa em bits por segundo que uma rede consegue transmitir bits
+
 ![baudRate](doc/Ttrasmisao.png)
 
 ## Troughput
 troughput é a velocidade de envio de um dado pela rede, definida por:
+
 troughput = OverHead + NBytes
 
