@@ -61,6 +61,7 @@ class enlace(object):
         
         #Envio do arquivo
         pack = self.buildDataPacket(data)
+        self.CalcularOverhead(pack,data)
         self.tx.sendBuffer(pack)
 
     def getData(self):
@@ -105,3 +106,9 @@ class enlace(object):
         pack += data
         pack += self.buildEop()
         return pack
+    
+
+    def CalcularOverhead(self,pack,data):
+        overhead = len(pack)/len(data) 
+        print("Overhead:" , overhead)
+        return overhead
