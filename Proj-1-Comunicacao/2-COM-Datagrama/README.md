@@ -31,7 +31,8 @@ Definido a quantidade de bytes reservados para a parte de controle do pacote, po
 ![overhead](doc/overhead.png)
 
 Para um arquivo de 3093 bytes foi obtido:
-OverHead = 
+
+OverHead = 1,0038
 
 ## BaudRate
 O baudRate é a taxa em bits por segundo que uma rede consegue transmitir bits
