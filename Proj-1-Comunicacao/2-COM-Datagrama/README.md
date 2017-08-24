@@ -21,12 +21,12 @@ Encapsulamento é o tipo de transferência utilizado como solução para os prob
 
 ![Protocolo](doc/protocolo.png)
 
-O head possui 4 bytes reservados, os dois primeiros bytes contem a marcação de inicialização, e os dois últimos bytes contém o tamanho do arquivo a ser empacotado
+O HEAD possui 4 bytes reservados, os dois primeiros bytes contem a marcação de inicialização, e os dois últimos bytes contém o tamanho do arquivo a ser empacotado
 
-O eop possui 4 bytes reservados, que fornecem uma sequência para indicar o final do arquivo, sequencias razoavelmente grandes no eop evitam que o payload contenha a mesma sequência, favorecendo a transferência do pacote completo 
+O EOP possui 4 bytes reservados, que fornecem uma sequência para indicar o final do arquivo, sequencias razoavelmente grandes no eop evitam que o payload contenha a mesma sequência, favorecendo a transferência do pacote completo 
 
 ## OverHead
-Definido a quantidade de bytes reservados para a parte de controle do pacote, pose-se calcular o protocolo overhead, que é a razão do tamanho total do pacote pelo tamanho de sua carga útil, quanto maior o overhead maior e a eficiência do protocolo.
+Definido a quantidade de bytes reservados para a parte de controle do pacote, pode-se calcular o protocolo overhead, que é a razão do tamanho total do pacote pelo tamanho de sua carga útil, quanto maior o overhead maior e a eficiência do protocolo.
 
 ![overhead](doc/overhead.png)
 
