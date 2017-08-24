@@ -7,15 +7,19 @@ date: 2017
 Essa etapa do projeto consiste na criação de um protocolo de comunicação entre o client e o server, deixando de ser um streaming de dados brutos, sem nenhuma manipulação e passa a conter um encapsulamento dos dados em um pacote ou (datagrama), o que fornece envios de imagens de forma mais segura.
 
 ## Streaming Bruto
+
+![Streaming Bruto](doc/Streaming2.png)
 Os principais problemas da comunicação através de um Straming bruto surgem quando se tem a transferência de mais de um arquivo ou arquivos pesados. 
 
+![Streaming Bruto](doc/Streaming.png)
 Imagine a situação em que há perda de bytes em uma transmissão, como não é possível identificar quando uma imagem termina e outra começa, a imagem 1 será construída com partes da imagem 2. Através dessa simulação pode-se afirmar que esse método de transferência possui dois problemas, ou seja, os dados se misturam em casos de perdas, e não é possível detectar a perdas de dados.
   
 ## Encapsulamento
 Encapsulamento é o tipo de transferência utilizado como solução para os problemas do streaming bruto, visto que em um pacote, possui um cabeçalho (head) e um fim do pacote (eop), que permitem delimitar o começo de um fluxo de dados. Um arquivo grande pode ser dividido em vários pacotes pequenos, o que diminui a perda de dados em um fluxo.
 
 ## HEAD e EOP utilizados
-#imagem
+
+![Protocolo](doc/protocolo.png)
 
 O head possui 4 bytes reservados, os dois primeiros bytes contem a marcação de inicialização, e os dois últimos bytes contém o tamanho do arquivo a ser empacotado
 
