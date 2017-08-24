@@ -9,9 +9,9 @@ Essa etapa do projeto consiste na criação de um protocolo de comunicação ent
 ## Streaming Bruto
 
 ![Streaming Bruto](doc/Streaming2.png)
-Os principais problemas da comunicação através de um Straming bruto surgem quando se tem a transferência de mais de um arquivo ou arquivos pesados. 
-
 ![Streaming Bruto](doc/Streaming.png)
+
+Os principais problemas da comunicação através de um Straming bruto surgem quando se tem a transferência de mais de um arquivo ou arquivos pesados. 
 Imagine a situação em que há perda de bytes em uma transmissão, como não é possível identificar quando uma imagem termina e outra começa, a imagem 1 será construída com partes da imagem 2. Através dessa simulação pode-se afirmar que esse método de transferência possui dois problemas, ou seja, os dados se misturam em casos de perdas, e não é possível detectar a perdas de dados.
   
 ## Encapsulamento
