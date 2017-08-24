@@ -1,5 +1,5 @@
 ---
-title: Camada Física -  Datagrama : 
+title: Camada Física -  Datagrama
 date: 2017
 ---
 
@@ -28,12 +28,16 @@ O eop possui 4 bytes reservados, que fornecem uma sequência para indicar o fina
 ## OverHead
 Definido a quantidade de bytes reservados para a parte de controle do pacote, pose-se calcular o protocolo overhead, que é a razão do tamanho total do pacote pelo tamanho de sua carga útil, quanto maior o overhead maior e a eficiência do protocolo.
 
+![overhead](doc/overhead.png)
+
 Para um arquivo de 3093 bytes foi obtido:
 OverHead = 
 
 ## BaudRate
 O baudRate é a taxa em bits por segundo que uma rede consegue transmitir bits
+![baudRate](doc/Ttrasmisao.png)
 
 ## Troughput
-troughput e a velocidade de envio de um dado pela rede
+troughput é a velocidade de envio de um dado pela rede, definida por:
+troughput = OverHead + NBytes
 
