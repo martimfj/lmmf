@@ -27,9 +27,9 @@ Definido a quantidade de bytes reservados para a parte de controle do pacote, po
 Para um arquivo de 3093 bytes foi obtido:
 OverHead = 
 
-#BaudRate
+## BaudRate
 O baudRate é a taxa em bits por segundo que uma rede consegue transmitir bits
 
-#Troughput
+## Troughput
 troughput e a velocidade de envio de um dado pela rede
 
