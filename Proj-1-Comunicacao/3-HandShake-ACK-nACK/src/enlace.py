@@ -84,6 +84,22 @@ class enlace(object):
                                 size = dataLen)) 
         return head
 
+
+    #Define a estrutura do head
+    def StructHead(self):
+        self.headStart = 0xFF
+        self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
+                                 "size"/ Int16ub
+                                 "tipcommand"/int8ub)
+        
+    #Implementa o head
+    def buildHead(self,dataLen,command):
+        head = self.headStruct.build(dict(
+                                start = self.headStart,
+                                size = dataLen
+                                tipcommand = command)) 
+        return head
+
     #Define a estrutura do eop
     def StructEop(self):
         self.endStart = 0xFF
@@ -100,15 +116,38 @@ class enlace(object):
                                 c4 = 0x04))
         return end
 
+    #PACOTE DADOS
     def buildDataPacket(self,data):
-        pack = self.buildHead(len(data))
-        print(len(data))
+        DADO = b"0"
+        pack = self.buildHead(len(data),DADO)
         pack += data
         pack += self.buildEop()
+        print(len(data))
         return pack
-    
 
+    #PACOTE COMANDO SYN
+    def buildSynPacket(self)
+        SYN = b"10"
+        pack = self.buildHead(len(data),SYN)
+        pack += self.buildEop()
+        return pack
+
+    #PACOTE COMANDO ACK
+    def buildAckPacket(self)
+        ACK = b"11"  
+        pack = self.buildHead(len(data),ACK)
+        pack += self.buildEop()
+        return pack
+
+    #PACOTE COMANDO NACK
+    def buildNackPacket(self)
+        NACK = b"12"
+        pack = self.buildHead(len(data),NACK)
+        pack += self.buildEop()
+        return pack
+
+    #CALCULAR OVERHEAD
     def CalcularOverhead(self,pack,data):
         overhead = len(pack)/len(data) 
         print("Overhead:" , overhead)
-        return overhead
+        return overhead    
