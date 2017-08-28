@@ -117,7 +117,7 @@ class RX(object):
 
         return(self.getBuffer(size))
 
-
+jghccgchgchgchg
     def clearBuffer(self):
         """ Clear the reception buffer
         """
@@ -137,3 +137,13 @@ class RX(object):
                 self.packetFound = True
 
                 return(payload, size)
+                #Mudar jeito que é feito esse unbuild, fazer o unbuild do head e do EOP separadamente em métodos.
+                #Usar o .startswith .endswith
+
+    def getPacket(self):
+        while(self.packetFound == False):
+            eop = self.buffer.find(b'\x01\x02\x03\x04') #Procura sequência pela byteArray
+            if eop != -1: #Se o EOP existe na byteArray
+                self.packetFound = True
+                headStart = self.buffer.find(b'\x00\xff')
+                head = self.buffer[self.buffer.find(b'\x00\xff'):5]
