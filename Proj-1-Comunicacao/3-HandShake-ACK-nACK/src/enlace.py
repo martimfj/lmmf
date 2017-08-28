@@ -136,12 +136,23 @@ class enlace(object):
 #---------------------------------------------#
     #Classifica o pacote em Commandos ou Dado
     def getPacketType(self):
-
-        return (type)
+        head, _, _ = self.rx.getPacket()
+        if head.endswith(b'0')
+            return ("Dado")
+        elif head.endswith(b'10') or head.endswith(b'11') or head.endswith(b'12')
+            return ("Comando")
+        else:
+            return ("Erro")
 
     #Classifica o comando em Syn, Ack ou nAck
     def getCommandType(self):
-        return (type)
+        head, _, _ = self.rx.getPacket()
+        if head.endswith(b'10') 
+            return("SYN")
+        elif head.endswith(b'11')
+            return ("ACK")
+        elif head.endswith(b'12')
+            return ("nACK")
 
     #Pega o size expresso no Head
     def getSize(self):

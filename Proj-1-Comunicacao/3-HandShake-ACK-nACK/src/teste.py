@@ -41,7 +41,11 @@ print(end) #b'\x01\x02\x03\x04'
 print(pack) #\x00\xff\x08\x00\x10\x01\x02\x03\x04'
 
 print(pack[pack.find(b'\x00\xff'):5])
-
+print(head[-1])
+print(head)
+print(head[4:5])
+SYN = b"10"
+print(SYN)
 # print(head[2:])
 # print(binascii.hexlify(head[2:]))
 # oi = binascii.hexlify(head[2:])
