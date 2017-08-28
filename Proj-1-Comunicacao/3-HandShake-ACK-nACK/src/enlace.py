@@ -66,7 +66,7 @@ class enlace(object):
         Return the byte array and the size of the buffer
         """
         _, data, _ = self.rx.getPacket()
-        return(data)
+        return (data)
 
 #---------------------------------------------#
     #Define a estrutura do HEAD.
@@ -154,6 +154,9 @@ class enlace(object):
         elif head.endswith(b'12')
             return ("nACK")
 
+        else:
+            return ("Erro")
+
     #Pega o size expresso no Head
     def getSize(self):
         head, _, _ = self.rx.getPacket()
@@ -165,7 +168,7 @@ class enlace(object):
     def CalcularOverhead(self,pack,data):
         overhead = len(pack)/len(data) 
         print("Overhead:" , overhead)
-        return overhead
+        return (overhead)
 
 
 

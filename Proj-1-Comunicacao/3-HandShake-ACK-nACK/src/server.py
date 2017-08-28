@@ -36,7 +36,9 @@ def main():
 
     # Faz a recepção dos dados
     print ("Recebendo dados .... ")
-    tempBuffer, nRx, size = com.getData()
+    tempBuffer = com.getData()
+    size = com.getSize()
+    nRx = len(tempBuffer)
     
     # log
     print ("Lido              {} bytes ".format(nRx))

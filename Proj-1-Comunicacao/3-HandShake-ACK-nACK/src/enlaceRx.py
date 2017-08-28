@@ -117,33 +117,17 @@ class RX(object):
 
         return(self.getBuffer(size))
 
-jghccgchgchgchg
     def clearBuffer(self):
         """ Clear the reception buffer
         """
         self.buffer = b""
-
-    def unbuildDataPacket(self):
-        """ Desencapsula os dados do pacote, retornando dataLen e payload
-        """
-        while(self.packetFound == False):
-            eop = self.buffer.find(b'\x01\x02\x03\x04') #Procura sequência pela byteArray
-            if eop != -1: #EOP existe na byteArray
-                packetHead = self.buffer.find(b'\x00\xff') #Procura pelo inicio do packet
-                headAndPayload = self.buffer[:eop] #Começo até EOP (Não inclui EOP)
-                size = int(binascii.hexlify(headAndPayload[2:4]), 16) #Posição 2 até 4 (Não inclui 4)
-                                                                     #Decode ASCII to Hex, Hex to Decimal
-                payload = headAndPayload[4:] #A partir do 4
-                self.packetFound = True
-
-                return(payload, size)
-                #Mudar jeito que é feito esse unbuild, fazer o unbuild do head e do EOP separadamente em métodos.
-                #Usar o .startswith .endswith
 
     def getPacket(self):
         while(self.packetFound == False):
             eop = self.buffer.find(b'\x01\x02\x03\x04') #Procura sequência pela byteArray
             if eop != -1: #Se o EOP existe na byteArray
                 self.packetFound = True
-                headStart = self.buffer.find(b'\x00\xff')
                 head = self.buffer[self.buffer.find(b'\x00\xff'):5]
+                payload = [head:eop]
+                return head, payload, eop
+
