@@ -74,7 +74,7 @@ class enlace(object):
         self.headStart = 0xFF
         self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
                                  "size"/ Int16ub,
-                                 "typecommand"/int8ub)
+                                 "typecommand"/ Int8ub)
         
     #Implementa o head
     def buildHead(self,dataLen, command):
@@ -91,7 +91,7 @@ class enlace(object):
         self.endStruct = Struct("c1" / Int8ub,
                                 "c2"/ Int8ub,
                                 "c3" / Int8ub,
-                                "c4" /Int8ub)
+                                "c4" / Int8ub)
 
     #Implementa o EOP.
     def buildEop(self):
