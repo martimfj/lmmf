@@ -31,8 +31,9 @@ class enlace(object):
         self.fisica      = fisica(name)
         self.rx          = RX(self.fisica)
         self.tx          = TX(self.fisica)
-        self.connected   = False
-
+        self.connect   = False
+        self.loop = True
+    
     def enable(self):
         """ Enable reception and transmission
         """
@@ -54,50 +55,55 @@ class enlace(object):
     def sendData(self, data):
         """ Send data over the enlace interface
         """
-
         #Construção do pack
         self.StructEop()
         self.StructHead()
         
+#########################################################3
         #Envio do arquivo
-        pack = self.buildDataPacket(data)
-        self.CalcularOverhead(pack,data)
-        self.tx.sendBuffer(pack)
+        if (self.connect):
+            pack = self.buildAckPacket(data)
+            self.tx.sendBuffer(pack)
 
+
+       # while (self.loop):
+        if(self.getCommandType() == b"12"):
+            pack = self.buildAckPacket()
+            self.tx.sendBuffer(pack)
+
+            pack = self.buildDataPacket(data)
+            self.CalcularOverhead(pack,data)
+            self.tx.sendBuffer(pack)
+            self.loop = False;  
+        else:
+            pack = self.buildSynPacket()
+            print("enviadooo")
+            self.tx.sendBuffer(pack)
+            time.sleep(0.1)
+
+############################################################3                
+        
     def getData(self):
         """ Get n data over the enlace interface
         Return the byte array and the size of the buffer
         """
         data, size = self.rx.unbuildDataPacket()
         return(data, len(data), size)
+ 
 
     #Define a estrutura do head
     def StructHead(self):
         self.headStart = 0xFF
-        self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
-                                 "size"/ Int16ub)
-        
-    #Implementa o head
-    def buildHead(self,dataLen):
-        head = self.headStruct.build(dict(
-                                start = self.headStart,
-                                size = dataLen)) 
-        return head
-
-
-    #Define a estrutura do head
-    def StructHead(self):
-        self.headStart = 0xFF
-        self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
-                                 "size"/ Int16ub
-                                 "tipcommand"/int8ub)
+        self.headStruct = Struct("start" / Int8ub, #Como é 16, o Head começará com \x00\xff + size 
+                                 "size"/ Int16ub,
+                                 "typeCommand"/ Int8ub)
         
     #Implementa o head
     def buildHead(self,dataLen,command):
         head = self.headStruct.build(dict(
                                 start = self.headStart,
-                                size = dataLen
-                                tipcommand = command)) 
+                                size = dataLen,
+                                typeCommand = command)) 
         return head
 
     #Define a estrutura do eop
@@ -118,7 +124,7 @@ class enlace(object):
 
     #PACOTE DADOS
     def buildDataPacket(self,data):
-        DADO = b"0"
+        DADO = 0
         pack = self.buildHead(len(data),DADO)
         pack += data
         pack += self.buildEop()
@@ -126,23 +132,23 @@ class enlace(object):
         return pack
 
     #PACOTE COMANDO SYN
-    def buildSynPacket(self)
-        SYN = b"10"
-        pack = self.buildHead(len(data),SYN)
+    def buildSynPacket(self):
+        SYN = 0x10
+        pack = self.buildHead(0,SYN)
         pack += self.buildEop()
         return pack
 
     #PACOTE COMANDO ACK
-    def buildAckPacket(self)
-        ACK = b"11"  
-        pack = self.buildHead(len(data),ACK)
+    def buildAckPacket(self):
+        ACK = 0x11
+        pack = self.buildHead(0,ACK)
         pack += self.buildEop()
         return pack
 
     #PACOTE COMANDO NACK
-    def buildNackPacket(self)
-        NACK = b"12"
-        pack = self.buildHead(len(data),NACK)
+    def buildNackPacket(self):
+        NACK = 0x12
+        pack = self.buildHead(0,NACK)
         pack += self.buildEop()
         return pack
 
@@ -150,4 +156,12 @@ class enlace(object):
     def CalcularOverhead(self,pack,data):
         overhead = len(pack)/len(data) 
         print("Overhead:" , overhead)
-        return overhead    
+        return overhead   
+
+    #OBTEM O TIPO DE COMANDO DO PACOTE
+    def getCommandType(self):
+        head = self.rx.buffer[:8]
+        type = head
+        print("TIPOOOOOOOOOOOOOOOooooooooOOO:" , head)
+        return type 
+    

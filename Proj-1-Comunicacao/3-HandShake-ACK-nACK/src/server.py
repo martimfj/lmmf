@@ -30,42 +30,57 @@ def main():
 
     # Log
     print("-------------------------")
-    print("Comunicação inicializada")
+    print("Aguardando HandShake")
     print("  porta : {}".format(com.fisica.name))
     print("-------------------------")
 
-    # Faz a recepção dos dados
-    print ("Recebendo dados .... ")
-    tempBuffer, nRx, size = com.getData()
-    
-    # log
-    print ("Lido              {} bytes ".format(nRx))
+    command = com.getCommandType()
+    print(command)
+    if (command == b"/x10"):
+        com.hand = True
+        com.sendData(b"0x00")
+        time.sleep(0.02)
+        command = com.getCommandType()
+        if command == b"/x11":
 
-    # Salva imagem recebida em arquivo
-    print("-------------------------")
-    print ("Salvando dados no arquivo :")
-    print (" - {}".format(imageW))
-    f = open(imageW, 'wb')
-    f.write(tempBuffer)
+            # Log
+            print("-------------------------")
+            print("Comunicação inicializada")
+            print("  porta : {}".format(com.fisica.name))
+            print("-------------------------")
 
-    print("-------------------------")
-    print ("Log de recebimento:")
-    print ("Tamanho do arquivo: {} ".format(size))
-    print ("Tamanho do arquivo recebido: {} ".format(nRx))
-    print ("Perdas: {} ".format(size-nRx))
+            # Faz a recepção dos dados
+            print ("Recebendo dados .... ")
+            tempBuffer, nRx, size = com.getData()
+            
+            # log
+            print ("Lido              {} bytes ".format(nRx))
 
-    
-    # Finaliza o tempo e calcula o tempo de transmissão
-    #print("O tempo total para a transmissão dos dados foi de: {}".format(fim - inicio))
+            # Salva imagem recebida em arquivo
+            print("-------------------------")
+            print ("Salvando dados no arquivo :")
+            print (" - {}".format(imageW))
+            f = open(imageW, 'wb')
+            f.write(tempBuffer)
 
-    # Fecha arquivo de imagem
-    f.close()
+            print("-------------------------")
+            print ("Log de recebimento:")
+            print ("Tamanho do arquivo: {} ".format(size))
+            print ("Tamanho do arquivo recebido: {} ".format(nRx))
+            print ("Perdas: {} ".format(size-nRx))
 
-    # Encerra comunicação
-    print("-------------------------")
-    print("Comunicação encerrada")
-    print("-------------------------")
-    com.disable()
+            
+            # Finaliza o tempo e calcula o tempo de transmissão
+            #print("O tempo total para a transmissão dos dados foi de: {}".format(fim - inicio))
+
+            # Fecha arquivo de imagem
+            f.close()
+
+            # Encerra comunicação
+            print("-------------------------")
+            print("Comunicação encerrada")
+            print("-------------------------")
+            com.disable()
 
 if __name__ == "__main__":
     main()
