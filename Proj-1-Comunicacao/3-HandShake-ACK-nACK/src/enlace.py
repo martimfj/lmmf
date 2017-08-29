@@ -48,17 +48,58 @@ class enlace(object):
         time.sleep(1)
         self.fisica.close()
 
-    def sendData(self, data):
-        """ Send data over the enlace interface
-        """
+    def connect(self):
+        """ Estabelece um conexão confiável com o Servidor - Máquina de Estados Client """
+        print("Client - Iniciando Handshake")
+        while(self.connected == False):
+            print("Enviando SYN...")
+            self.sendData(buildSynPacket())
+            print("SYN Enviado!")
+            print("Esperando pelo SYN + ACK do Servidor...")
+            time.sleep(0.1) #Timeout de 0.1
+            if(getCommandType() == "SYN + ACK"): #Resolver isso: Como juntar os Pacotes de comando
+                print("SYN + ACK Recebido!")
+                print("Confirmando recebimento do SYN...")
+                self.sendData(buildAckPacket())
+                self.connected = True
+                print("Conexão estabelecida!")
+            elif(getCommandType() == "Erro")
+                print("Erro na transmissão de dados. Reconectando...")
+                time.sleep(0.15)
+            else:
+                print("Timeout! O Server não respondeu no tempo hábil. Reconectando...")
+                time.sleep(0.15)
 
+    def bind(self):
+         """ Estabelece um conexão confiável com o Client - Máquina de Estados Servidor """
+        print("Servidor - Iniciando Handshake")
+        while(self.connected == False):
+            print("Aguardando SYN do Client...")
+            if(getCommandType() == "SYN"):
+                print("SYN Recebido!")
+                print("Confirmando recebimento do SYN...")
+                self.sendData(buildAckPacket()) #SYN + ACK
+                time.sleep(0.15)
+            elif(getCommandType() == "ACK"):
+                print("ACK Recebido!")
+                self.connected = True
+                print("Conexão estabelecida!")
+            elif(getCommandType() == "Erro")
+                print("Erro na transmissão de dados.")
+                self.sendData(buildNackPacket())
+            else:
+                print("Timeout! O Client não respondeu no tempo hábil.")
+                self.sendData(buildNackPacket())
+                time.sleep(0.15)
+
+
+    def sendData(self, data):
         #Construção do pack
         self.StructEop()
         self.StructHead()
         
         #Envio do arquivo
         pack = self.buildDataPacket(data)
-        self.CalcularOverhead(pack,data)
         self.tx.sendBuffer(pack)
 
     def getData(self):
@@ -114,21 +155,21 @@ class enlace(object):
 #---------------------------------------------#
     #Cria o Pacote Comando Syn
     def buildSynPacket(self)
-        SYN = b"10"
+        SYN = 0x10
         pack = self.buildHead(0,SYN)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando Ack
     def buildAckPacket(self)
-        ACK = b"11"  
+        ACK = 0x11  
         pack = self.buildHead(0,ACK)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando nAck
     def buildNackPacket(self)
-        NACK = b"12"
+        NACK = 0x12
         pack = self.buildHead(0,NACK)
         pack += self.buildEop()
         return pack
@@ -139,7 +180,7 @@ class enlace(object):
         head, _, _ = self.rx.getPacket()
         if head.endswith(b'0')
             return ("Dado")
-        elif head.endswith(b'10') or head.endswith(b'11') or head.endswith(b'12')
+        elif head.endswith(b'\x10') or head.endswith(b'\x11') or head.endswith(b'\x12')
             return ("Comando")
         else:
             return ("Erro")
@@ -147,13 +188,12 @@ class enlace(object):
     #Classifica o comando em Syn, Ack ou nAck
     def getCommandType(self):
         head, _, _ = self.rx.getPacket()
-        if head.endswith(b'10') 
-            return("SYN")
-        elif head.endswith(b'11')
+        if head.endswith(b'\x10') 
+            return ("SYN")
+        elif head.endswith(b'\x11')
             return ("ACK")
-        elif head.endswith(b'12')
+        elif head.endswith(b'\x12')
             return ("nACK")
-
         else:
             return ("Erro")
 
@@ -165,7 +205,7 @@ class enlace(object):
 
 #---------------------------------------------#
     #CALCULAR OVERHEAD
-    def CalcularOverhead(self,pack,data):
+    def CalcularOverhead(self, pack, data):
         overhead = len(pack)/len(data) 
         print("Overhead:" , overhead)
         return (overhead)

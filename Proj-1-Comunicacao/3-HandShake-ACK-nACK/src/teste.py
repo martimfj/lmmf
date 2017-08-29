@@ -46,6 +46,14 @@ print(head)
 print(head[4:5])
 SYN = b"10"
 print(SYN)
+
+
+eop = pack.find(b'\x01\x02\x03\x04') #Procura sequência pela byteArray
+if eop != -1: #Se o EOP existe na byteArray
+    head = pack[pack.find(b'\x00\xff'):5]
+    data = pack[head:eop]
+    print(data)
+
 # print(head[2:])
 # print(binascii.hexlify(head[2:]))
 # oi = binascii.hexlify(head[2:])
