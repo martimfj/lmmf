@@ -32,7 +32,8 @@ class enlace(object):
         self.rx          = RX(self.fisica)
         self.tx          = TX(self.fisica)
         self.connected   = False
-
+        self.cont = 1
+    
     def enable(self):
         """ Enable reception and transmission
         """
@@ -47,28 +48,42 @@ class enlace(object):
         self.tx.threadKill()
         time.sleep(1)
         self.fisica.close()
+        
 
     def connect(self):
-        """ Estabelece um conexão confiável com o Servidor - Máquina de Estados Client """
-        print("Client - Iniciando Handshake")
-        while(self.connected == False):
-            print("Enviando SYN...")
-            self.sendData(self.buildSynPacket())
-            print("SYN Enviado!")
-            print("Esperando pelo SYN + ACK do Servidor...")
-            time.sleep(0.1) #Timeout de 0.1
-            if(self.getCommandType() == "SYN + ACK"): #Resolver isso: Como juntar os Pacotes de comando
-                print("SYN + ACK Recebido!")
-                print("Confirmando recebimento do SYN...")
-                self.sendData(self.buildAckPacket())
-                self.connected = True
-                print("Conexão estabelecida!")
-            elif(self.getCommandType() == "Erro"):
-                print("Erro na transmissão de dados. Reconectando...")
-                time.sleep(0.15)
+#         """ Estabelece um conexão confiável com o Servidor - Máquina de Estados Client """
+#         print("Client - Iniciando Handshake")
+#         while(self.connected == False):
+#             print("Enviando SYN...")
+#             self.sendData(self.buildSynPacket())
+#             print("SYN Enviado!")
+#             print("Esperando pelo SYN + ACK do Servidor...")
+#             time.sleep(0.1) #Timeout de 0.1
+#             if(self.getCommandType() == "SYN + ACK"): #Resolver isso: Como juntar os Pacotes de comando
+#                 print("SYN + ACK Recebido!")
+#                 print("Confirmando recebimento do SYN...")
+#                 self.sendData(self.buildAckPacket())
+#                 self.connected = True
+#                 print("Conexão estabelecida!")
+#             elif(self.getCommandType() == "Erro"):
+#                 print("Erro na transmissão de dados. Reconectando...")
+#                 time.sleep(0.15)
+#             else:
+#                 return self.buildSynPacket()
+        
+        if (self.cont == 1):
+            self.cont = 2
+            return self.buildSynPacket()
+        
+        else:
+            self.comando = self.getCommandType()
+            if(self.comando == "SYN + ACK"):
+                return self.buildAckPacket()
+            elif(self.comando == "Ack"):
+                return self.buildAckPacket()
             else:
-                print("Timeout! O Server não respondeu no tempo hábil. Reconectando...")
-                time.sleep(0.15)
+                return self.buildSynPacket()
+                
 
     def bind(self):
         """ Estabelece um conexão confiável com o Client - Máquina de Estados Servidor """
@@ -92,23 +107,19 @@ class enlace(object):
                 self.sendData(self.buildNackPacket())
                 time.sleep(0.15)
 
-
-    def sendDataMartimStyle(self, data):
+    def sendData(self, data):
         #Construção do pack
         self.StructEop()
         self.StructHead()
 
-        if(self.getPacketType() == "Dado"):
-            if(self.connected == False):
-                self.connect()
-            else:
-                pack = self.buildDataPacket(data)
-                self.tx.sendBuffer(pack)
-        elif(self.getPacketType() == "Comando"):
-            self.tx.sendBuffer(data)
-        else:
-            print("Erro na transmissão de dados")
-
+        while(self.connected == False):
+            pack = self.connect()
+            self.tx.sendBuffer(pack)
+            time.sleep(0.95)
+        
+        pack = self.buildDataPacket(data)
+        self.tx.sendBuffer(pack)
+            
     def getData(self):
         """ Get n data over the enlace interface
         Return the byte array and the size of the buffer
@@ -163,21 +174,21 @@ class enlace(object):
     #Cria o Pacote Comando Syn
     def buildSynPacket(self):
         SYN = 0x10
-        pack = self.buildHead(0,SYN)
+        pack = self.buildHead(0x00,SYN)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando Ack
     def buildAckPacket(self):
         ACK = 0x11  
-        pack = self.buildHead(0,ACK)
+        pack = self.buildHead(0x00,ACK)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando nAck
     def buildNackPacket(self):
         NACK = 0x12
-        pack = self.buildHead(0,NACK)
+        pack = self.buildHead(0x00,NACK)
         pack += self.buildEop()
         return pack
 
@@ -216,8 +227,3 @@ class enlace(object):
         overhead = len(pack)/len(data) 
         print("Overhead:" , overhead)
         return (overhead)
-
-
-
-
-

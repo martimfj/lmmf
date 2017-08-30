@@ -117,11 +117,13 @@ class RX(object):
 
         return(self.getBuffer(size))
 
+
     def clearBuffer(self):
         """ Clear the reception buffer
         """
         self.buffer = b""
 
+ 
     def getPacket(self):
         while(self.packetFound == False):
             eop = self.buffer.find(b'\x01\x02\x03\x04') #Procura sequência pela byteArray
