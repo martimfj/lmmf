@@ -19,6 +19,7 @@ import time
 serialName = "COM4"                  # Windows(variacao de)
 
 def main():
+
     # Inicializa enlace
     com = enlace(serialName)
 
@@ -30,15 +31,19 @@ def main():
 
     # Log
     print("-------------------------")
+    print("Aguardando HandShake")
+    print("  porta : {}".format(com.fisica.name))
+    print("-------------------------")
+
+    # Log
+    print("-------------------------")
     print("Comunicação inicializada")
     print("  porta : {}".format(com.fisica.name))
     print("-------------------------")
 
     # Faz a recepção dos dados
     print ("Recebendo dados .... ")
-    tempBuffer = com.getData()
-    size = com.getSize()
-    nRx = len(tempBuffer)
+    tempBuffer, nRx = com.getData()
     
     # log
     print ("Lido              {} bytes ".format(nRx))

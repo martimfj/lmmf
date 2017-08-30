@@ -32,7 +32,8 @@ class enlace(object):
         self.rx          = RX(self.fisica)
         self.tx          = TX(self.fisica)
         self.connected   = False
-
+        self.cont = 1
+    
     def enable(self):
         """ Enable reception and transmission
         """
@@ -47,82 +48,61 @@ class enlace(object):
         self.tx.threadKill()
         time.sleep(1)
         self.fisica.close()
+        
 
     def connect(self):
-        """ Estabelece um conexão confiável com o Servidor - Máquina de Estados Client """
-        print("Client - Iniciando Handshake")
-        while(self.connected == False):
-            print("Enviando SYN...")
-            self.sendData(self.buildSynPacket())
-            print("SYN Enviado!")
-            print("Esperando pelo SYN + ACK do Servidor...")
-            time.sleep(0.1) #Timeout de 0.1
-            if(self.getCommandType() == "SYN + ACK"): #Resolver isso: Como juntar os Pacotes de comando 
-                print("SYN + ACK Recebido!")
-                print("Confirmando recebimento do SYN...")
-                self.sendData(self.buildAckPacket())
-                self.connected = True
-                print("Conexão estabelecida!")
-            elif(self.getCommandType() == "Erro")
-                print("Erro na transmissão de dados. Reconectando...")
-                time.sleep(0.15)
+        
+        if (self.cont == 1):
+            self.cont = 2
+            return self.buildSynPacket()
+        
+        else:
+            self.comando = self.getCommandType()
+            if(self.comando == "SYN + ACK"):
+                return self.buildAckPacket()
+            elif(self.comando == "Ack"):
+                return self.buildAckPacket()
             else:
-                print("Timeout! O Server não respondeu no tempo hábil. Reconectando...")
-                time.sleep(0.15)
+                return self.buildSynPacket()
+                
 
     def bind(self):
-         """ Estabelece um conexão confiável com o Client - Máquina de Estados Servidor """
-        print("Servidor - Iniciando Handshake")
-        while(self.connected == False):
-            print("Aguardando SYN do Client...")
-            if(self.getCommandType() == "SYN"):
-                print("SYN Recebido!")
-                print("Confirmando recebimento do SYN...")
-                self.sendData(self.buildAckPacket()) #SYN + ACK
-                time.sleep(0.15)
+        if(self.getCommandType() == "SYN"):
+            return self.buildSynPacket + self.buildAckPacket() #SYN + ACK
+        elif(getCommandType() == "ACK"):
+            self.connected = True
+        elif(getCommandType() == "Erro"):
+            self.sendData(buildNackPacket())
+        else:
+            self.sendData(buildNackPacket())
+            
 
-            elif(self.getCommandType() == "ACK"):
-                print("ACK Recebido!")
-                self.connected = True
-                print("Conexão estabelecida!")
-
-            elif(self.getCommandType() == "Erro")
-                print("Erro na transmissão de dados.")
-                self.sendData(self.buildNackPacket())
-                
-            else:
-                print("Timeout! O Client não respondeu no tempo hábil.")
-                self.sendData(self.buildNackPacket())
-                time.sleep(0.15)
 
     def sendData(self, data):
         #Construção do pack
         self.StructEop()
         self.StructHead()
-
-        if(self.getPacketType() == "Dado"):
-            if(self.connected = False):
-                self.connect()
-            else:
-                pack = self.buildDataPacket(data)
-                self.tx.sendBuffer(pack)
-        elif(self.getPacketType() == "Comando"):
+        while(self.connected == False):
+            pack = self.connect()
             self.tx.sendBuffer(pack)
-        else:
-            print("Erro na transmissão de dados")
+            time.sleep(0.95)
+        
+        pack = self.buildDataPacket(data)
+        self.tx.sendBuffer(pack)
+            
 
     def getData(self):
         """ Get n data over the enlace interface
         Return the byte array and the size of the buffer
         """
-        _, data, _ = self.rx.getPacket()
+        _, data = self.rx.getPacket()
         return (data)
 
 #---------------------------------------------#
     #Define a estrutura do HEAD.
     def StructHead(self):
         self.headStart = 0xFF
-        self.headStruct = Struct("start" / Int8ub, #Como é 16, o Head começará com \x00\xff + size 
+        self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
                                  "size"/ Int16ub,
                                  "typecommand"/ Int8ub)
         
@@ -139,7 +119,7 @@ class enlace(object):
     def StructEop(self):
         self.endStart = 0xFF
         self.endStruct = Struct("c1" / Int8ub,
-                                "c2" / Int8ub,
+                                "c2"/ Int8ub,
                                 "c3" / Int8ub,
                                 "c4" / Int8ub)
 
@@ -163,52 +143,52 @@ class enlace(object):
 
 #---------------------------------------------#
     #Cria o Pacote Comando Syn
-    def buildSynPacket(self)
+    def buildSynPacket(self):
         SYN = 0x10
-        pack = self.buildHead(0,SYN)
+        pack = self.buildHead(0x00,SYN)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando Ack
-    def buildAckPacket(self)
+    def buildAckPacket(self):
         ACK = 0x11  
-        pack = self.buildHead(0,ACK)
+        pack = self.buildHead(0x00,ACK)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando nAck
-    def buildNackPacket(self)
+    def buildNackPacket(self):
         NACK = 0x12
-        pack = self.buildHead(0,NACK)
+        pack = self.buildHead(0x00,NACK)
         pack += self.buildEop()
         return pack
 
 #---------------------------------------------#
     #Classifica o pacote em Commandos ou Dado
     def getPacketType(self):
-        head, _, _ = self.rx.getPacket()
-        if head.endswith(b'0')
+        head, _ = self.rx.getPacket()
+        if head.endswith(b'0'):
             return ("Dado")
-        elif head.endswith(b'\x10') or head.endswith(b'\x11') or head.endswith(b'\x12')
+        elif head.endswith(b'\x10') or head.endswith(b'\x11') or head.endswith(b'\x12'):
             return ("Comando")
         else:
             return ("Erro")
 
     #Classifica o comando em Syn, Ack ou nAck
     def getCommandType(self):
-        head, _, _ = self.rx.getPacket()
-        if head.endswith(b'\x10') 
+        head, _= self.rx.getPacket()
+        if head.endswith(b'\x10'):
             return ("SYN")
-        elif head.endswith(b'\x11')
+        elif head.endswith(b'\x11'):
             return ("ACK")
-        elif head.endswith(b'\x12')
-            return ("nACK")
+        elif head.endswith(b'\x12'):
+            return ("NACK")
         else:
             return ("Erro")
 
     #Pega o size expresso no Head
     def getSize(self):
-        head, _, _ = self.rx.getPacket()
+        head, _= self.rx.getPacket()
         size = int(binascii.hexlify(head[2:4]), 16)
         return (size)
 
@@ -218,8 +198,3 @@ class enlace(object):
         overhead = len(pack)/len(data) 
         print("Overhead:" , overhead)
         return (overhead)
-
-
-
-
-
