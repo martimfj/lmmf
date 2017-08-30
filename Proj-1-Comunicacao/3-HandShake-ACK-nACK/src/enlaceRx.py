@@ -128,6 +128,8 @@ class RX(object):
             if eop != -1: #Se o EOP existe na byteArray
                 self.packetFound = True
                 head = self.buffer[self.buffer.find(b'\x00\xff'):5]
-                payload = [head:eop]
-                return head, payload, eop
+                payload = self.buffer[5:eop]
+                self.packetFound = False
+                return head, payload
+            time.sleep(0.1)
 
