@@ -54,7 +54,6 @@ class enlace(object):
         
         if (self.cont == 1):
             self.cont = 2
-            print("contfunfa")
             return self.buildSynPacket()
         
         else:
@@ -86,7 +85,7 @@ class enlace(object):
         while(self.connected == False):
             pack = self.connect()
             self.tx.sendBuffer(pack)
-            time.sleep(0.15)
+            time.sleep(0.95)
         
         pack = self.buildDataPacket(data)
         self.tx.sendBuffer(pack)
@@ -177,20 +176,14 @@ class enlace(object):
 
     #Classifica o comando em Syn, Ack ou nAck
     def getCommandType(self):
-        print("TEsteA")
         head, _= self.rx.getPacket()
-        print('testeB')
         if head.endswith(b'\x10'):
-            print('testec') 
             return ("SYN")
         elif head.endswith(b'\x11'):
-            print('tested')
             return ("ACK")
         elif head.endswith(b'\x12'):
-            print('testee')
             return ("NACK")
         else:
-            print('testef')
             return ("Erro")
 
     #Pega o size expresso no Head

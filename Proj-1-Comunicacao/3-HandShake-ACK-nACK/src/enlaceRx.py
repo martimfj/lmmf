@@ -125,15 +125,12 @@ class RX(object):
 
  
     def getPacket(self):
-        #print("lalala")
         while(self.packetFound == False):
-         #   print("lelele")
-            print(self.buffer)
             eop = self.buffer.find(b'\x01\x02\x03\x04') #Procura sequência pela byteArray
             if eop != -1: #Se o EOP existe na byteArray
-                print("lilili")
                 self.packetFound = True
                 head = self.buffer[self.buffer.find(b'\x00\xff'):5]
-                payload = self.buffer[head:eop]
-                self.getBuffer(eop+4)
+                payload = self.buffer[5:eop]
+                self.packetFound = False
                 return head, payload
+            time.sleep(0.1)
