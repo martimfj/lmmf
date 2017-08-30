@@ -73,7 +73,7 @@ class enlace(object):
         #Construção do pack
         self.StructEop()
         self.StructHead()
-
+#
         while(self.connected == False):
             pack = self.connect()
             self.tx.sendBuffer(pack)
