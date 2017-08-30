@@ -134,3 +134,4 @@ class RX(object):
                 self.packetFound = False
                 return head, payload
             time.sleep(0.1)
+
