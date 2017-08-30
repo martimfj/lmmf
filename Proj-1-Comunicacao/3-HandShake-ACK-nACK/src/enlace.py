@@ -53,17 +53,17 @@ class enlace(object):
         print("Client - Iniciando Handshake")
         while(self.connected == False):
             print("Enviando SYN...")
-            self.sendData(buildSynPacket())
+            self.sendData(self.buildSynPacket())
             print("SYN Enviado!")
             print("Esperando pelo SYN + ACK do Servidor...")
             time.sleep(0.1) #Timeout de 0.1
-            if(getCommandType() == "SYN + ACK"): #Resolver isso: Como juntar os Pacotes de comando
+            if(self.getCommandType() == "SYN + ACK"): #Resolver isso: Como juntar os Pacotes de comando 
                 print("SYN + ACK Recebido!")
                 print("Confirmando recebimento do SYN...")
-                self.sendData(buildAckPacket())
+                self.sendData(self.buildAckPacket())
                 self.connected = True
                 print("Conexão estabelecida!")
-            elif(getCommandType() == "Erro")
+            elif(self.getCommandType() == "Erro")
                 print("Erro na transmissão de dados. Reconectando...")
                 time.sleep(0.15)
             else:
@@ -75,32 +75,41 @@ class enlace(object):
         print("Servidor - Iniciando Handshake")
         while(self.connected == False):
             print("Aguardando SYN do Client...")
-            if(getCommandType() == "SYN"):
+            if(self.getCommandType() == "SYN"):
                 print("SYN Recebido!")
                 print("Confirmando recebimento do SYN...")
-                self.sendData(buildAckPacket()) #SYN + ACK
+                self.sendData(self.buildAckPacket()) #SYN + ACK
                 time.sleep(0.15)
-            elif(getCommandType() == "ACK"):
+
+            elif(self.getCommandType() == "ACK"):
                 print("ACK Recebido!")
                 self.connected = True
                 print("Conexão estabelecida!")
-            elif(getCommandType() == "Erro")
+
+            elif(self.getCommandType() == "Erro")
                 print("Erro na transmissão de dados.")
-                self.sendData(buildNackPacket())
+                self.sendData(self.buildNackPacket())
+                
             else:
                 print("Timeout! O Client não respondeu no tempo hábil.")
-                self.sendData(buildNackPacket())
+                self.sendData(self.buildNackPacket())
                 time.sleep(0.15)
-
 
     def sendData(self, data):
         #Construção do pack
         self.StructEop()
         self.StructHead()
-        
-        #Envio do arquivo
-        pack = self.buildDataPacket(data)
-        self.tx.sendBuffer(pack)
+
+        if(self.getPacketType() == "Dado"):
+            if(self.connected = False):
+                self.connect()
+            else:
+                pack = self.buildDataPacket(data)
+                self.tx.sendBuffer(pack)
+        elif(self.getPacketType() == "Comando"):
+            self.tx.sendBuffer(pack)
+        else:
+            print("Erro na transmissão de dados")
 
     def getData(self):
         """ Get n data over the enlace interface
@@ -113,7 +122,7 @@ class enlace(object):
     #Define a estrutura do HEAD.
     def StructHead(self):
         self.headStart = 0xFF
-        self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
+        self.headStruct = Struct("start" / Int8ub, #Como é 16, o Head começará com \x00\xff + size 
                                  "size"/ Int16ub,
                                  "typecommand"/ Int8ub)
         
@@ -130,7 +139,7 @@ class enlace(object):
     def StructEop(self):
         self.endStart = 0xFF
         self.endStruct = Struct("c1" / Int8ub,
-                                "c2"/ Int8ub,
+                                "c2" / Int8ub,
                                 "c3" / Int8ub,
                                 "c4" / Int8ub)
 
