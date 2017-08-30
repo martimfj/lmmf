@@ -32,7 +32,8 @@ class enlace(object):
         self.rx          = RX(self.fisica)
         self.tx          = TX(self.fisica)
         self.connected   = False
-
+        self.cont = 1
+    
     def enable(self):
         """ Enable reception and transmission
         """
@@ -47,33 +48,41 @@ class enlace(object):
         self.tx.threadKill()
         time.sleep(1)
         self.fisica.close()
+        
 
     def connect(self):
-            if(self.getCommandType() == "SYN + ACK"):
+        
+        if (self.cont == 1):
+            self.cont = 2
+            print("contfunfa")
+            return self.buildSynPacket()
+        
+        else:
+            self.comando = self.getCommandType()
+            if(self.comando == "SYN + ACK"):
                 return self.buildAckPacket()
-            elif(getCommandType() == "Ack"):
+            elif(self.comando == "Ack"):
                 return self.buildAckPacket()
             else:
                 return self.buildSynPacket()
                 
 
     def bind(self):
-            if(self.getCommandType() == "SYN"):
-                return self.buildSynPacket + self.buildAckPacket() #SYN + ACK
-            elif(getCommandType() == "ACK"):
-                self.connected = True
-            elif(getCommandType() == "Erro")
-                self.sendData(buildNackPacket())
-            else:
-                self.sendData(buildNackPacket())
-                
+        if(self.getCommandType() == "SYN"):
+            return self.buildSynPacket + self.buildAckPacket() #SYN + ACK
+        elif(getCommandType() == "ACK"):
+            self.connected = True
+        elif(getCommandType() == "Erro"):
+            self.sendData(buildNackPacket())
+        else:
+            self.sendData(buildNackPacket())
+            
 
 
     def sendData(self, data):
         #Construção do pack
         self.StructEop()
         self.StructHead()
-#
         while(self.connected == False):
             pack = self.connect()
             self.tx.sendBuffer(pack)
@@ -87,7 +96,7 @@ class enlace(object):
         """ Get n data over the enlace interface
         Return the byte array and the size of the buffer
         """
-        _, data, _ = self.rx.getPacket()
+        _, data = self.rx.getPacket()
         return (data)
 
 #---------------------------------------------#
@@ -137,50 +146,56 @@ class enlace(object):
     #Cria o Pacote Comando Syn
     def buildSynPacket(self):
         SYN = 0x10
-        pack = self.buildHead(0,SYN)
+        pack = self.buildHead(0x00,SYN)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando Ack
     def buildAckPacket(self):
         ACK = 0x11  
-        pack = self.buildHead(0,ACK)
+        pack = self.buildHead(0x00,ACK)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando nAck
     def buildNackPacket(self):
         NACK = 0x12
-        pack = self.buildHead(0,NACK)
+        pack = self.buildHead(0x00,NACK)
         pack += self.buildEop()
         return pack
 
 #---------------------------------------------#
     #Classifica o pacote em Commandos ou Dado
     def getPacketType(self):
-        head, _, _ = self.rx.getPacket()
-        if head.endswith(b'0')
+        head, _ = self.rx.getPacket()
+        if head.endswith(b'0'):
             return ("Dado")
-        elif head.endswith(b'\x10') or head.endswith(b'\x11') or head.endswith(b'\x12')
+        elif head.endswith(b'\x10') or head.endswith(b'\x11') or head.endswith(b'\x12'):
             return ("Comando")
         else:
             return ("Erro")
 
     #Classifica o comando em Syn, Ack ou nAck
     def getCommandType(self):
-        head, _, _ = self.rx.getPacket()
-        if head.endswith(b'\x10') 
+        print("TEsteA")
+        head, _= self.rx.getPacket()
+        print('testeB')
+        if head.endswith(b'\x10'):
+            print('testec') 
             return ("SYN")
-        elif head.endswith(b'\x11')
+        elif head.endswith(b'\x11'):
+            print('tested')
             return ("ACK")
-        elif head.endswith(b'\x12')
+        elif head.endswith(b'\x12'):
+            print('testee')
             return ("NACK")
         else:
+            print('testef')
             return ("Erro")
 
     #Pega o size expresso no Head
     def getSize(self):
-        head, _, _ = self.rx.getPacket()
+        head, _= self.rx.getPacket()
         size = int(binascii.hexlify(head[2:4]), 16)
         return (size)
 
@@ -190,8 +205,3 @@ class enlace(object):
         overhead = len(pack)/len(data) 
         print("Overhead:" , overhead)
         return (overhead)
-
-
-
-
-
