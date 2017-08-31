@@ -76,7 +76,6 @@ class enlace(object):
                 print("Time out")
                 print("Reiniciando conexão")
                 time.sleep(0.15)
-        print("testeB")
         pack = self.buildDataPacket(data)
         while(self.enviardata == False):
             self.sendData(pack)
@@ -128,7 +127,6 @@ class enlace(object):
 
     def sendData(self, pack):
         self.tx.sendBuffer(pack)
-        print("testeE")
             
     def getData(self):
         """ Get n data over the enlace interface
@@ -187,7 +185,6 @@ class enlace(object):
         pack += data
         pack += self.buildEop()
         print(len(data))
-        print("testeA")
         return pack
 
 #---------------------------------------------#
