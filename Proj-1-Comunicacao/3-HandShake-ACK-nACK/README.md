@@ -55,40 +55,9 @@ Para verificar a integridade dos pacotes, o Server realiza uma chegagem do taman
 
 
 1. Documentação
-    - Descrever o handshake implementado.
-    - Descrever os pacotes (SYN,ACK,NACK).
-        - diagrama dos pacotes.
     - Diagrame o envio de pacotes em como uma máquina de estados.
     - Diagrame a recepção de pacotes como uma máquina de estados.
     - Descrever o tempo de timeout utilizado (e o porque desse valor).
-    - Como diferencia pacotes de comando (SYN,ACK,NACK) de pacote de dados ?
     
-## Itens extras
-
-1. Implementar o FIN (final de comunicação)
-1. Inserir CheckSum no HEAD e Payload para detecção de anomalias nos pacotes
-
-## Validação
-
-- Inicializar o Client e não conectar o Server. Nenhuma imagem deve ser enviada.
-- Após algum tempo inicializar o Server, deve acontecer o handshake e a transferência deve ser executada.
-- Durante a transmissão, desconectar o fio que transmite dados entre Client e Server
-    - Server deve responder com nACK
-    - Client deve retransmitir o pacote.
-
-
-## Rubricas
-
-| Nota máxima | Descritivo                                                |
-|-------------|-----------------------------------------------------------|
-| A           | - Entregue no prazo                                       |
-|             | - Implementado extras                                     |
-| B           | - Entregue no prazo                                       |
-|             | - Implementado requisitos necessários                     |
-| C           | - Entregue fora do prazo                                  |
-|             | - Implementando requisitos necessários                    |
-| D           | - Nem todos os requisitos necessários foram implementados |
-| I           | - Não entregue                                            |
-
-
-
+    - EXTRA: Implementar o FIN (final de comunicação)
+    - EXTRA: Inserir CheckSum no HEAD e Payload para detecção de anomalias nos pacotes
