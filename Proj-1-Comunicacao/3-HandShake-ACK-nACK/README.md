@@ -1,25 +1,39 @@
----
-title: Camada Física -  Projeto 3 - COM-HandShake-ACK-nACK
-author: Rafael Corsi - rafael.corsi@insper.edu.br
-date: Agosto - 2017
----
+# Camada Física - Projeto 1 - COM-Handshake
+Leonardo Medeiros e Martim Ferrera José
 
-*Entrega : Até o começo da aula do dia 31/8*
+Nessa etapa do projeto, foi implementado de forma incremental um protocolo de handshake na camada de enlace que garante ao *client* que dados só serão trafegados na rede quando o *server* estiver habilitado para receber. Além disso, um protocolo de reconhecimento (ACK e NACK) foi implementado para que o *client* tenha conhecimento do status da recepção do pacote pelo *server*, caso uma falha for detectada, ele reenvia o pacote.
 
-![Etapa Atual](doc/etapaAtualPilhaEnlace.png){ width=30% }
+## Funcionamento do Handshake
+O handshake foi implementado na camada *enlace* por meio de duas funções, a *connect()* para o **Client** e *bind()* para o **Server**, que funcionam como uma Máquina de estados, que avaliam os dados que estão recebendo, por meio de funcões como *getCommandType()* e *getPacketType()*.
 
-# Projeto 2 : HandShake/ Ack e nACL
 
-Implementar de forma incremental um protocolo de handshake entre na camada de enlace que garante ao *client* que dados só serão trafegados na rede quando o *server* estiver habilitado para receber. Além disso, um protocolo de reconhecimento (ACK e NACK) deve ser implementado para que o *client* tenha conhecimento do status da recepção do pacote pelo *server*, caso uma falha for detectada, reenviar o pacote.
+### Handshake
+Para estabelecer uma conexão segura com o *Server*, o *Client* envia um pacote comando SYN para o *Server*, que deve responder durante um tempo hábil se ele recebeu este "pedido" de Sincronização. Caso ele receba, ele deve responder (enviar) com um pacote comando ACK, monstrando reconhecimento positivo do SYN e logo depois deve enviar um SYN para firmar a conexão por sua parte. O Client ao receber este ACK + SYN, deve responder ACK para confirmar a conexão por sua parte também. Com a conexão estabelecida de forma segura, o *Client* pode enviar os pacotes de dados. Caso uma das partes responde com nAck, o handshake se reinicia. O funcionamento do handshake é ilustrado no diagrama a seguir:
 
-- [Lista aula 3](https://github.com/Insper/Camada-Fisica-Computacao/blob/master/2-Aulas/3-Datagrama/3-Lista-Datagrama.pdf)
+![Diagrama do Handshake](doc/diagrama_handshake.png)
 
-## Dicas
+Os pacotes de comandos foram implementados da seguinte forma:
+    - Head: headStart (16 bits), size (16 bits), typeCommand (8 bits)
+    - Payload: *Não contém payload* -> Head size = 0
+    - EOP: 4 constantes (8 bits, 8 bits, 8 bits, 8 bits)
 
-Algumas dicas de implementação podem ser lidas em : 
- 
-- [Dicas](https://github.com/Insper/Camada-Fisica-Computacao/blob/master/3-Projetos/2-COM-Datagrama/dicas.pdf)
-  
+Os tipos de pacotes de comandos foram decididos da seguinte forma:
+    - SYN: Pacote de sincronismo (0x10)
+    - ACK: Pacote de reconhecimento positivo (0x11)
+    - nACK: Pacote de reconhecimento negativo (0x12)
+
+Por exemplo, o pacote nACK ficaria da seguinte maneira:
+
+|           Head            | Payload |        EOP            |
+|-------------|-----------------------------------------------|
+| * \x00\xff\x00\x00\x12  * |    -    |  * \x01\x02\x03\x04 * |
+
+
+### Integridade dos pacotes
+Para verificar a integridade dos pacotes, o Server realiza 
+
+
+
 # Requisitos
 
 Requisitos de projeto :
