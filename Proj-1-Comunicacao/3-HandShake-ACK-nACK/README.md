@@ -13,14 +13,14 @@ Para estabelecer uma conexão segura com o *Server*, o *Client* envia um pacote 
 ![Diagrama do Handshake](doc/diagrama_handshake.png)
 
 Os pacotes de comandos foram implementados da seguinte forma:
-    - Head: headStart (16 bits), size (16 bits), typeCommand (8 bits)
-    - Payload: *Não contém payload* -> Head size = 0
-    - EOP: 4 constantes (8 bits, 8 bits, 8 bits, 8 bits)
+- Head: headStart (16 bits), size (16 bits), typeCommand (8 bits)
+- Payload: *Não contém payload* -> Head size = 0
+- EOP: 4 constantes (8 bits, 8 bits, 8 bits, 8 bits)
 
 Os tipos de pacotes de comandos foram decididos da seguinte forma:
-    - SYN: Pacote de sincronismo (0x10)
-    - ACK: Pacote de reconhecimento positivo (0x11)
-    - nACK: Pacote de reconhecimento negativo (0x12)
+- SYN: Pacote de sincronismo (0x10)
+- ACK: Pacote de reconhecimento positivo (0x11)
+- nACK: Pacote de reconhecimento negativo (0x12)
 
 Por exemplo, o pacote nACK ficaria da seguinte maneira:
 ---
