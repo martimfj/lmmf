@@ -10,6 +10,7 @@
 # Importa pacote de tempo
 import time
 import parser
+import binascii
 
 # Construct Struct
 from construct import *
@@ -32,6 +33,7 @@ class enlace(object):
         self.rx          = RX(self.fisica)
         self.tx          = TX(self.fisica)
         self.connected   = False
+        self.enviardata = False
      
     
     def enable(self):
@@ -76,8 +78,13 @@ class enlace(object):
                 time.sleep(0.15)
         print("testeB")
         pack = self.buildDataPacket(data)
-        print("testeC")
-        self.sendData(pack)
+        while(self.enviardata == False):
+            self.sendData(pack)
+            time.sleep(0.2)
+            if (self.getCommandType() == "ACK"):
+                self.enviardata = True
+            elif(self.getCommandType() == "nACK"):
+                self.enviardata = False        
         
     def bind(self):
         self.constructado()
@@ -128,6 +135,15 @@ class enlace(object):
         Return the byte array and the size of the buffer
         """
         _, data = self.rx.getPacket()
+        size = len(data)
+
+        while(size != len(data)):
+            print("nack enviado")
+            self.sendData(self.buildNackPacket())
+            time.sleep(0.2)
+        
+        print("ack enviado")
+        self.sendData(self.buildAckPacket())
         return (data)
 
 #---------------------------------------------#
@@ -199,29 +215,33 @@ class enlace(object):
 #---------------------------------------------#
     #Classifica o pacote em Commandos ou Dado
     def getPacketType(self):
-        head, _ = self.rx.getPacket()
+        head, _= self.rx.getPacket()
         if head.endswith(b'\x00'):
             return ("Dado")
         elif head.endswith(b'\x10') or head.endswith(b'\x11') or head.endswith(b'\x12'):
             return ("Comando")
         else:
-            return ("Erro")
+            return ("Buffer vazio")
 
     #Classifica o comando em Syn, Ack ou nAck
     def getCommandType(self):
-        head, _ = self.rx.getPacket()
-        if head.endswith(b'\x10'):
-            return ("SYN")
-        elif head.endswith(b'\x11'):
-            return ("ACK")
-        elif head.endswith(b'\x12'):
-            return ("nACK")
+        if (self.rx.getIsEmpty() == False):
+            head, _= self.rx.getPacket()
+            if head.endswith(b'\x10'):
+                return ("SYN")
+            elif head.endswith(b'\x11'):
+                return ("ACK")
+            elif head.endswith(b'\x12'):
+                return ("nACK")
+            else:
+                return ("Erro")
         else:
-            return ("Erro")
+            time.sleep(0.5)
+            return("Erro")
 
     #Pega o size expresso no Head
     def getSize(self):
-        head, _ = self.rx.getPacket()
+        head, _= self.rx.getPacket()
         size = int(binascii.hexlify(head[2:4]), 16)
         return (size)
 
