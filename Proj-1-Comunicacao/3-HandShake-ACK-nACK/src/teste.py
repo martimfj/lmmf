@@ -4,7 +4,7 @@ import parser
 
 dataLen = 2*1024
 command = 0x10
-data = b'\x54\xfd'
+#data = b'\x54\xfd'
 
 headStart = 0xFF
 headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
@@ -28,7 +28,7 @@ end = endStruct.build(dict(
                             c4 = 0x04))
 
 
-pack = head + data + end
+pack = head + end
 
 # if head.startswith(b'\x00\xff'):
 #     print(True)
@@ -46,13 +46,14 @@ print(head)
 print(head[4:5])
 SYN = b"10"
 print(SYN)
+print(len(pack))
 
 
 eop = pack.find(b'\x01\x02\x03\x04') #Procura sequência pela byteArray
+print(eop)
 if eop != -1: #Se o EOP existe na byteArray
     head = pack[pack.find(b'\x00\xff'):5]
-    data = pack[head:eop]
-    print(data)
+    data = pack[5:eop]
 
 # print(head[2:])
 # print(binascii.hexlify(head[2:]))

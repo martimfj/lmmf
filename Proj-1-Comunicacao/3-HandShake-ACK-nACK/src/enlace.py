@@ -50,74 +50,75 @@ class enlace(object):
         self.fisica.close()
         
 
-    def connect(self):
-#         """ Estabelece um conexão confiável com o Servidor - Máquina de Estados Client """
-#         print("Client - Iniciando Handshake")
-#         while(self.connected == False):
-#             print("Enviando SYN...")
-#             self.sendData(self.buildSynPacket())
-#             print("SYN Enviado!")
-#             print("Esperando pelo SYN + ACK do Servidor...")
-#             time.sleep(0.1) #Timeout de 0.1
-#             if(self.getCommandType() == "SYN + ACK"): #Resolver isso: Como juntar os Pacotes de comando
-#                 print("SYN + ACK Recebido!")
-#                 print("Confirmando recebimento do SYN...")
-#                 self.sendData(self.buildAckPacket())
-#                 self.connected = True
-#                 print("Conexão estabelecida!")
-#             elif(self.getCommandType() == "Erro"):
-#                 print("Erro na transmissão de dados. Reconectando...")
-#                 time.sleep(0.15)
-#             else:
-#                 return self.buildSynPacket()
-        
-        if (self.cont == 1):
-            self.cont = 2
-            return self.buildSynPacket()
-        
-        else:
-            self.comando = self.getCommandType()
-            if(self.comando == "SYN + ACK"):
-                return self.buildAckPacket()
-            elif(self.comando == "Ack"):
-                return self.buildAckPacket()
+    def connect(self,data):
+        self.constructado()
+        """ Estabelece um conexão confiável com o Servidor - Máquina de Estados Client """
+        print("Client - Iniciando Handshake")
+        while(self.connected == False):
+            print("Enviando SYN...")
+            self.sendData(self.buildSynPacket())
+            print("SYN Enviado!")
+            print("Esperando pelo ACK + SYN do Servidor...")
+            time.sleep(0.15) 
+            if(self.getCommandType() == "ACK"):
+                time.sleep(0.15)
+                if (self.getCommandType() == "SYN"): 
+                    print("SYN + ACK Recebido!")
+                    print("Confirmando recebimento do SYN...")
+                    self.sendData(self.buildAckPacket())    
+                    print("Conexão estabelecida!")
+                    self.connected = True
+            elif(self.getCommandType() == "Erro"):
+                print("Erro na transmissão de dados. Reconectando...")
             else:
-                return self.buildSynPacket()
+                print("Time out")
+                print("Reiniciando conexão")
+                time.sleep(0.15)
+        pack = self.buildDataPacket(data)
+        self.sendData(pack)
                 
 
     def bind(self):
+        self.constructado()
         """ Estabelece um conexão confiável com o Client - Máquina de Estados Servidor """
         print("Servidor - Iniciando Handshake")
         while(self.connected == False):
-            print("Aguardando SYN do Client...")
+            print("Aguardando um Comando do Client")
             if(self.getCommandType() == "SYN"):
                 print("SYN Recebido!")
-                print("Confirmando recebimento do SYN...")
-                self.sendData(self.buildAckPacket()) #SYN + ACK
-                time.sleep(0.15)
-            elif(self.getCommandType() == "ACK"):
-                print("ACK Recebido!")
-                self.connected = True
-                print("Conexão estabelecida!")
+
+                self.sendData(self.buildAckPacket())
+                print("ACK Enviado")
+                time.sleep(0.1)
+
+                self.sendData(self.buildSynPacket())
+                print("SYN Enviado")
+
+                if(self.getCommandType() == "ACK"):
+                    print("ACK Recebido!")
+                    self.connected = True
+                    print("Conexão estabelecida!")
+
+                time.sleep(0.4)
+
+            elif(self.getCommandType() == "nACK"):
+                print("Conexão não estabelecida, erro!")
+                self.sendData(self.buildNackPacket())
+
             elif(self.getCommandType() == "Erro"):
                 print("Erro na transmissão de dados.")
                 self.sendData(self.buildNackPacket())
-            else:
-                print("Timeout! O Client não respondeu no tempo hábil.")
-                self.sendData(self.buildNackPacket())
-                time.sleep(0.15)
 
-    def sendData(self, data):
-        #Construção do pack
+            else:
+                print("Timeout! O Client não respondeu no tempo hábil. Reiniciando Conexão.")
+                self.sendData(self.buildNackPacket())
+            time.sleep(0.15)
+
+    def constructado(self):
         self.StructEop()
         self.StructHead()
 
-        while(self.connected == False):
-            pack = self.connect()
-            self.tx.sendBuffer(pack)
-            time.sleep(0.95)
-        
-        pack = self.buildDataPacket(data)
+    def sendData(self, pack):
         self.tx.sendBuffer(pack)
             
     def getData(self):
@@ -132,8 +133,8 @@ class enlace(object):
     def StructHead(self):
         self.headStart = 0xFF
         self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
-                                 "size"/ Int16ub,
-                                 "typecommand"/ Int8ub)
+                                 "size" / Int16ub,
+                                 "typecommand" / Int8ub)
         
     #Implementa o head
     def buildHead(self,dataLen, command):
@@ -164,7 +165,7 @@ class enlace(object):
 #---------------------------------------------#
     #Cria o Pacote de Dados.
     def buildDataPacket(self,data):
-        pack = self.buildHead(len(data),b'\x00')
+        pack = self.buildHead(len(data),0x00)
         pack += data
         pack += self.buildEop()
         print(len(data))
@@ -174,21 +175,21 @@ class enlace(object):
     #Cria o Pacote Comando Syn
     def buildSynPacket(self):
         SYN = 0x10
-        pack = self.buildHead(0x00,SYN)
+        pack = self.buildHead(0,SYN)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando Ack
     def buildAckPacket(self):
         ACK = 0x11  
-        pack = self.buildHead(0x00,ACK)
+        pack = self.buildHead(0,ACK)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando nAck
     def buildNackPacket(self):
         NACK = 0x12
-        pack = self.buildHead(0x00,NACK)
+        pack = self.buildHead(0,NACK)
         pack += self.buildEop()
         return pack
 

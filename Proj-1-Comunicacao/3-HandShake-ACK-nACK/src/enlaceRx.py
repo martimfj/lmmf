@@ -41,6 +41,7 @@ class RX(object):
                 rxTemp, nRx = self.fisica.read(self.READLEN)
                 if (nRx > 0):
                     self.buffer += rxTemp
+                print(self.buffer)
                 time.sleep(0.001)
 
             #Recebe todos os pacotes, salva no buffer e fica varrendo o buffer em procura do EOP,
@@ -132,6 +133,7 @@ class RX(object):
                 head = self.buffer[self.buffer.find(b'\x00\xff'):5]
                 payload = self.buffer[5:eop]
                 self.packetFound = False
+                self.getBuffer(eop + 4)
                 return head, payload
             time.sleep(0.1)
 

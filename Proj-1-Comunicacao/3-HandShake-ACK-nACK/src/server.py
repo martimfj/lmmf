@@ -16,7 +16,7 @@ import time
 
 #serialName = "/dev/ttyACM0"           # Ubuntu (variacao de)
 #serialName = "/dev/tty.usbmodem1411" # Mac    (variacao de)
-serialName = "COM5"                  # Windows(variacao de)
+serialName = "COM4"                  # Windows(variacao de)
 
 def main():
 
@@ -25,10 +25,6 @@ def main():
 
     # Ativa comunicacao
     com.enable()
-    com.bind()
-
-    # Endereco da imagem a ser salva
-    imageW = "./imgs/recebida.png"
 
     # Log
     print("-------------------------")
@@ -36,18 +32,17 @@ def main():
     print("  porta : {}".format(com.fisica.name))
     print("-------------------------")
 
-    # Log
-    print("-------------------------")
-    print("Comunicação inicializada")
-    print("  porta : {}".format(com.fisica.name))
-    print("-------------------------")
+    com.bind()
+
+    # Endereco da imagem a ser salva
+    imageW = "./imgs/recebida.png"
 
     # Faz a recepção dos dados
     print ("Recebendo dados .... ")
-    tempBuffer, nRx = com.getData()
+    tempBuffer = com.getData()
     
     # log
-    print ("Lido              {} bytes ".format(nRx))
+    #print ("Lido              {} bytes ".format(nRx))
 
     # Salva imagem recebida em arquivo
     print("-------------------------")
@@ -56,11 +51,11 @@ def main():
     f = open(imageW, 'wb')
     f.write(tempBuffer)
 
-    print("-------------------------")
-    print ("Log de recebimento:")
-    print ("Tamanho do arquivo: {} ".format(size))
-    print ("Tamanho do arquivo recebido: {} ".format(nRx))
-    print ("Perdas: {} ".format(size-nRx))
+    # print("-------------------------")
+    # print ("Log de recebimento:")
+    # print ("Tamanho do arquivo: {} ".format(size))
+    # print ("Tamanho do arquivo recebido: {} ".format(nRx))
+    # print ("Perdas: {} ".format(size-nRx))
 
     
     # Finaliza o tempo e calcula o tempo de transmissão
