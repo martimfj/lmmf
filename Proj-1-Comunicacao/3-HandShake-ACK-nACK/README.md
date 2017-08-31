@@ -43,9 +43,14 @@ obs: Size e payload fictício, somente para ilustração.
 
 
 ### Máquinas de Estado
-Como dito anteriormente, as máquinas de estado avaliam o **estado** da comunicação entre Client e Server e tomam ações a partir desse estado. Os estados dependem de tempo e inputs/outputs dado pelos pacotes comando recebidos e/ou enviados. As máquinas de estados de ambos *Server* e *Client* estão representadas no diagrama abaixo:
+Como dito anteriormente, as máquinas de estado avaliam o **estado** da comunicação entre Client e Server e tomam ações a partir desse estado. Os estados dependem de tempo e inputs/outputs dado pelos pacotes comando recebidos e/ou enviados. As máquinas de estados de ambos *Server* e *Client* estão representadas nos diagramas abaixo:
 
-![Diagrama Máquinas de Estados](doc/diagrama_maquinas.png)
+#### Máquina de Estados do Client
+![Diagrama Máquinas de Estados - Client](doc/diagrama_maquina-client.png)
+
+
+#### Máquina de Estados do Server
+![Diagrama Máquinas de Estados - Server](doc/diagrama_maquina-server.png)
 
 O tempo do timeout utilizado pelas máquinas de estados foi de X segundos, porque .... 
 
@@ -55,8 +60,6 @@ Para verificar a integridade dos pacotes, o Server realiza uma chegagem do taman
 
 
 1. Documentação
-    - Diagrame o envio de pacotes em como uma máquina de estados.
-    - Diagrame a recepção de pacotes como uma máquina de estados.
     - Descrever o tempo de timeout utilizado (e o porque desse valor).
     
     - EXTRA: Implementar o FIN (final de comunicação)
