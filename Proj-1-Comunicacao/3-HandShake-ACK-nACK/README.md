@@ -27,8 +27,8 @@ Por exemplo, o pacote **nACK** ficaria da seguinte maneira:
 
 | Head | Payload | EOP |
 | ------------- | ------------- | ------------- |
-| `\x00\xff\x54\x45\x12` | ...`\xfd\x37\x67\x9f`... | `\x01\x02\x03\x04` |
-obs: Size e payload fictício, somente para ilustração.
+|  `\x00\xff\x00\x00\x00` |  | `\x01\x02\x03\x04` |
+
 
 ### Pacotes de Dado
 Para diferenciar os pacotes de dados dos de comando, declaramos no Head todos os pacotes o *typeCommand*. Caso ele seja 0x00, o código entende que este pacote é um pacote de dados.
@@ -36,7 +36,9 @@ Para diferenciar os pacotes de dados dos de comando, declaramos no Head todos os
 Por exemplo, o pacote carregando uma imagem .png ficaria da seguinte maneira:
 | Head | Payload | EOP |
 | ------------- | ------------- | ------------- |
-| `\x00\xff\x00\x00\x00` |  | `\x01\x02\x03\x04` |
+| `\x00\xff\x54\x45\x12` | ...`\xfd\x37\x67\x9f`... | `\x01\x02\x03\x04` |
+
+obs: Size e payload fictício, somente para ilustração.
 
 
 ### Máquinas de Estado
