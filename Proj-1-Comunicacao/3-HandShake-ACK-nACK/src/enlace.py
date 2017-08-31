@@ -32,7 +32,7 @@ class enlace(object):
         self.rx          = RX(self.fisica)
         self.tx          = TX(self.fisica)
         self.connected   = False
-        self.enviarData = False
+     
     
     def enable(self):
         """ Enable reception and transmission
@@ -74,13 +74,11 @@ class enlace(object):
                 print("Time out")
                 print("Reiniciando conexão")
                 time.sleep(0.15)
-        while(self.enviardata == False):
-            pack = self.buildDataPacket(data)
-            self.sendData(pack)
-            self.enviardata = True
-            if(self.getCommandType == "nACK"):
-                self.enviardata = False    
-
+        print("testeB")
+        pack = self.buildDataPacket(data)
+        print("testeC")
+        self.sendData(pack)
+        
     def bind(self):
         self.constructado()
         """ Estabelece um conexão confiável com o Client - Máquina de Estados Servidor """
@@ -123,6 +121,7 @@ class enlace(object):
 
     def sendData(self, pack):
         self.tx.sendBuffer(pack)
+        print("testeE")
             
     def getData(self):
         """ Get n data over the enlace interface
@@ -172,6 +171,7 @@ class enlace(object):
         pack += data
         pack += self.buildEop()
         print(len(data))
+        print("testeA")
         return pack
 
 #---------------------------------------------#

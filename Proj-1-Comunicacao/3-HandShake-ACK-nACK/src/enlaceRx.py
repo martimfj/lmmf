@@ -41,7 +41,7 @@ class RX(object):
                 rxTemp, nRx = self.fisica.read(self.READLEN)
                 if (nRx > 0):
                     self.buffer += rxTemp
-                print(self.buffer)
+                #print(self.buffer)
                 time.sleep(0.001)
 
             #Recebe todos os pacotes, salva no buffer e fica varrendo o buffer em procura do EOP,

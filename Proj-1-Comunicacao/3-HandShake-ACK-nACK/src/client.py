@@ -48,7 +48,7 @@ def main(texto):
     # Transmite imagem
     print("Transmitindo .... {} bytes".format(txLen))
     inicio = time.time()
-    com.sendData(txBuffer)
+    com.connect(txBuffer)
 
     # espera o fim da transmissão
     while(com.tx.getIsBussy()):
