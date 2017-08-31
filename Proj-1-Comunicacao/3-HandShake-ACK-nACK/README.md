@@ -24,11 +24,9 @@ Os tipos de pacotes de comandos foram decididos da seguinte forma:
 
 Por exemplo, o pacote nACK ficaria da seguinte maneira:
 
----
-Head: *\x00\xff\x00\x00\x12*
-Payload: 
-EOP: *\x01\x02\x03\x04*
----
+| Head | Payload | EOP |
+| ------------- | ------------- |
+| *\x00\xff\x00\x00\x12*  | - | *\x01\x02\x03\x04* |
 
 
 ### Integridade dos pacotes
