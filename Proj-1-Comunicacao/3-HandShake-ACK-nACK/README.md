@@ -23,6 +23,7 @@ Os tipos de pacotes de comandos foram decididos da seguinte forma:
 - nACK: Pacote de reconhecimento negativo (0x12)
 
 Por exemplo, o pacote nACK ficaria da seguinte maneira:
+
 ---
 Head: *\x00\xff\x00\x00\x12*
 Payload: 
