@@ -46,19 +46,14 @@ obs: Size e payload fictício, somente para ilustração.
 Como dito anteriormente, as máquinas de estado avaliam o **estado** da comunicação entre Client e Server e tomam ações a partir desse estado. Os estados dependem de tempo e inputs/outputs dado pelos pacotes comando recebidos e/ou enviados. As máquinas de estados de ambos *Server* e *Client* estão representadas nos diagramas abaixo:
 
 #### Máquina de Estados do Client
-![Diagrama Máquinas de Estados - Client](doc/diagrama_maquina-client.png){ width=30% }
+![Diagrama Máquinas de Estados - Client](doc/diagrama_maquina-client.png) { width=30% }
 
 
 #### Máquina de Estados do Server
-![Diagrama Máquinas de Estados - Server](doc/diagrama_maquina-server.png){ width=30% }
+![Diagrama Máquinas de Estados - Server](doc/diagrama_maquina-server.png) { width=30% }
 
 O tempo do timeout utilizado pelas máquinas de estados foi de 0.15 ms, porque o envio e o recebimento do pacote pela camada física não é instantâneo. Também usufruimos do tempo que leva para o código rodar (prints demoraram um tempo considerável).
 
 
 ## Reconhecimento do pacote
 Para verificar a integridade dos pacotes, o Server realiza uma chegagem do tamanho payload recebido com o tamanho do payload declarado no Head. Se esse valor for diferente, o Server responde o recebimento do pacote de dados com um nACK, caso contrário, ele responde com um ACK, sinalizando que recebeu o pacote de forma íntegra e salva os dados. Quando o Client recebe um nACK do Server, ele reenvia o pacote anteriormente corrompido e espera um ACK para considerar o envio como positivo.
-
-
-1. Documentação   
-    - EXTRA: Implementar o FIN (final de comunicação)
-    - EXTRA: Inserir CheckSum no HEAD e Payload para detecção de anomalias nos pacotes
