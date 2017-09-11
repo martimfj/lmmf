@@ -147,17 +147,29 @@ class enlace(object):
         """ Get n data over the enlace interface
         Return the byte array and the size of the buffer
         """
-        _, data = self.rx.getPacket()
-        size = len(data)
+        byterecebido = 0
+        bytetotal = 1
+        f = bytearray
 
-        while(size != len(data)):
-            print("nack enviado")
-            self.sendData(self.buildNackPacket())
-            time.sleep(0.2)
-        
-        print("ack enviado")
-        self.sendData(self.buildAckPacket())
-        return (data)
+        while(byterecebido != bytetotal)
+            head, data = self.rx.getPacket()
+            size = len(data)
+            
+            while(size != len(data)):
+                print("nack enviado")
+                self.sendData(self.buildNackPacket())
+                time.sleep(0.2)
+                head, data = self.rx.getPacket()
+                size = len(data)
+            
+            print("Bytes recebidos: ", byterecebido, bytetotal)
+            byterecebido += head[2]
+            bytetotal = head[4]
+
+            print("ack enviado")
+            self.sendData(self.buildAckPacket())
+            f += data 
+        return f
 
 #---------------------------------------------#
     #Define a estrutura do HEAD.
