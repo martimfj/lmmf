@@ -34,10 +34,11 @@ class enlace(object):
         self.tx          = TX(self.fisica)
         self.connected   = False
         self.enviardata  = False
-        self.number      = 0
-        self.bufferdata = bytes(bytearray())
-        self.sizeselect = 2048
-
+        self.bufferdata  = bytes(bytearray())
+        self.sizeselect  = 2048
+        self.datasize    = 0
+        self.sizepack    = 0
+         
     def enable(self):
         """ Enable reception and transmission
         """
@@ -53,17 +54,18 @@ class enlace(object):
         time.sleep(1)
         self.fisica.close()
         
-    def fragment(self):
+    def fragment(self,data):
         corte = len(self.bufferdata)//2
         print(corte)
         b           = self.bufferdata[:corte]
         self.buffer = self.bufferdata[corte:]
         print("pacote n", len(b))
-        return b
+        return self.buildDataPacket(b)
 
     def connect(self,data):
         self.constructado()
         self.bufferdata = data[:]
+        self.datasize = len(data)
         """ Estabelece um conexão confiável com o Servidor - Máquina de Estados Client """
         print("Client - Iniciando Handshake")
 
@@ -89,7 +91,7 @@ class enlace(object):
                 time.sleep(0.15)
 
         while(len(self.bufferdata)!= 0):
-            pack = self.buildDataPacket(data)
+            pack = self.ragment(data)
             while(self.enviardata == False):
                 self.sendData(pack)
                 time.sleep(0.2)
@@ -164,15 +166,15 @@ class enlace(object):
         self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
                                  "size" / Int16ub,
                                  "typecommand" / Int8ub,
-                                 "numberpack" / Int8ub)
+                                 "totaldatasize" / Int8ub)
         
     #Implementa o head
-    def buildHead(self,dataLen, command, number):
+    def buildHead(self,dataLen, command, totaldatasize):
         head = self.headStruct.build(dict(
                                 start = self.headStart,
                                 size = dataLen,
                                 typecommand = command,
-                                numberpack = number)) 
+                                totalsize = totaldatasize)) 
         return head
 
 #---------------------------------------------#
@@ -196,9 +198,9 @@ class enlace(object):
 #---------------------------------------------#
     #Cria o Pacote de Dados.
     def buildDataPacket(self,data):
-        self.number += 1
-        pack = self.buildHead(len(data),0x00,self.number)
-        pack += self.fragment()
+        self.sizepack += len(data)       
+        pack = self.buildHead(self.sizepack,0x00,self.datasize)
+        pack += data
         pack += self.buildEop()
         print(len(data))
         return pack
