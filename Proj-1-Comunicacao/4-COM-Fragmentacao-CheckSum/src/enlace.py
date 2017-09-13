@@ -11,6 +11,7 @@
 import time
 import parser
 import binascii
+import crcmod
 
 # Construct Struct
 from construct import *
