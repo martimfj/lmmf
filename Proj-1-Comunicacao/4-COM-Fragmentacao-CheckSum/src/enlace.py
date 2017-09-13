@@ -165,10 +165,10 @@ class enlace(object):
             size = self.getSize(head)
             CRC_head_value = head[7]
             CRC_payload_value = head[8]
+            head[6] = 0
             head[7] = 0
-            head[8] = 0
-            CRC_Head = crcCalcula(head)
-            CRC_Data = crcCalcula(data)
+            CRC_Head = self.crcCalcula(head)
+            CRC_Data = self.crcCalcula(data)
 
     
             if(size != len(data) or (CRC_head_value != CRC_Head) or (CRC_payload_value != CRC_Data) ):
@@ -201,7 +201,7 @@ class enlace(object):
     #Implementa o head
     def buildHead(self, dataLen, totalsize,  crc_head_value, crc_payload_value, command):
         head = self.headStruct.build(dict(
-                                start = headStart,
+                                start = self.headStart,
                                 size = dataLen,
                                 totaldatasize = totalsize,
                                 crc_head = crc_head_value,
@@ -231,19 +231,10 @@ class enlace(object):
     #Cria o Pacote de Dados.
     def buildDataPacket(self,data):
         self.sizepack += len(data)       
-        pack = self.buildHead(self.sizepack,self.datasize,0x00)
-        pack += data
-        pack += self.buildEop()
-        return pack
-
-#---------------------------------------------#
-    #Cria o Pacote de Dados.
-    def buildDataPacket(self,data):
-        self.sizepack += len(data)       
         head = self.buildHead(self.sizepack,self.datasize,0,0,0)
 
-        CRC_Head = crcCalcula(head)
-        CRC_Data = crcCalcula(data)
+        CRC_Head = self.crcCalcula(head)
+        CRC_Data = self.crcCalcula(data)
 
         head = self.buildHead(self.sizepack,self.datasize,CRC_Head,CRC_Data,0)
 
@@ -287,6 +278,7 @@ class enlace(object):
     def getCommandType(self):
         if (self.rx.getIsEmpty() == False):
             head, _= self.rx.getPacket()
+            print(head)
             if head.endswith(b'\x10'):
                 return ("SYN")
             elif head.endswith(b'\x11'):
