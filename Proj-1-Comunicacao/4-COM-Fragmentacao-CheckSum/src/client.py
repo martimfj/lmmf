@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bi+n/env python3
 # -*- coding: utf-8 -*-
 #####################################################
 # Camada Física da Computação
@@ -10,26 +10,26 @@
 from enlace import *
 import time
 
+
 # Serial Com Port
 #   para saber a sua porta, execute no terminal :
 #   python -m serial.tools.list_ports
 
-serialName = "/dev/ttyACM0"           # Ubuntu (variacao de)
+#serialName = "/dev/ttyACM0"           # Ubuntu (variacao de)
 #serialName = "/dev/tty.usbmodem1411" # Mac    (variacao de)
-#serialName = "COM3"                  # Windows(variacao de)
+serialName = "COM6"                  # Windows(variacao de)
 
-def main():
+def main(texto):
+
     # Inicializa enlace
     com = enlace(serialName)
 
     # Ativa comunicacao
     com.enable()
 
-    # Endereco da imagem a ser imageR = "./imgs/imageC.png"transmitida
-    imageR = "./imgs/imageC.png"
-
+    # Endereco da imagem a ser transmitida
+    imageR = texto
     # Endereco da imagem a ser salva
-    imageW = "./imgs/recebida.png"
 
     # Log
     print("-------------------------")
@@ -47,7 +47,8 @@ def main():
 
     # Transmite imagem
     print("Transmitindo .... {} bytes".format(txLen))
-    com.sendData(txBuffer)
+    inicio = time.time()
+    com.connect(txBuffer)
 
     # espera o fim da transmissão
     while(com.tx.getIsBussy()):
@@ -57,22 +58,9 @@ def main():
     txSize = com.tx.getStatus()
     print ("Transmitido       {} bytes ".format(txSize))
 
-    # Faz a recepção dos dados
-    print ("Recebendo dados .... ")
-    rxBuffer, nRx = com.getData(txLen)
-
-    # log
-    print ("Lido              {} bytes ".format(nRx))
-
-    # Salva imagem recebida em arquivo
-    print("-------------------------")
-    print ("Salvando dados no arquivo :")
-    print (" - {}".format(imageW))
-    f = open(imageW, 'wb')
-    f.write(rxBuffer)
-
-    # Fecha arquivo de imagem
-    f.close()
+    # Finaliza o tempo e calcula o tempo de transmissão
+    fim = time.time()
+    print("O tempo total para a transmissão dos dados foi de: {}".format(fim - inicio))
 
     # Encerra comunicação
     print("-------------------------")
