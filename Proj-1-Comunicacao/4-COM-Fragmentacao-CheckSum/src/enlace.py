@@ -167,8 +167,8 @@ class enlace(object):
             CRC_payload_value = head[8]
             head[6] = 0
             head[7] = 0
-            CRC_Head = self.crcCalcula(head)
-            CRC_Data = self.crcCalcula(data)
+            CRC_Head = self.getCRC(head)
+            CRC_Data = self.getCRC(data)
 
     
             if(size != len(data) or (CRC_head_value != CRC_Head) or (CRC_payload_value != CRC_Data) ):
@@ -233,8 +233,8 @@ class enlace(object):
         self.sizepack += len(data)       
         head = self.buildHead(self.sizepack,self.datasize,0,0,0)
 
-        CRC_Head = self.crcCalcula(head)
-        CRC_Data = self.crcCalcula(data)
+        CRC_Head = self.getCRC(head)
+        CRC_Data = self.getCRC(data)
 
         head = self.buildHead(self.sizepack,self.datasize,CRC_Head,CRC_Data,0)
 
