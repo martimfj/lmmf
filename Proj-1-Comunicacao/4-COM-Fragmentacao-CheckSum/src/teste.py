@@ -14,8 +14,6 @@ data1 = b''
 dataLen = len(data1)
 print(type(command))
 
-
-
 headStart = 0xFF
 headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
                     "size"/ Int16ub,

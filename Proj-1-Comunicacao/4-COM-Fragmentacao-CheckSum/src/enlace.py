@@ -254,6 +254,6 @@ class enlace(object):
 #---------------------------------------------#
     #Calcula CRC
     def getCRC(self, data):
-        crc8_func = crcmod.predefined.mkCrcFun('crc-8')
-        crc = int(hex(crc8_func(data)), 16).to_bytes(1, byteorder='big')
+        crc8_func = crcmod.predefined.mkCrcFun('crc-16')
+        crc = format(crc8_func(data), '#02x')
         return crc
