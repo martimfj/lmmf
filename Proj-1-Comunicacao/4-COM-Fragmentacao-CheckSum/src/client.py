@@ -50,7 +50,7 @@ def main(texto):
     inicio = time.time()
 
 
-    com.fragment(txBuffer)
+    com.connect(txBuffer)
 
     # espera o fim da transmissão
     while(com.tx.getIsBussy()):

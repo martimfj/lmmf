@@ -55,11 +55,14 @@ class enlace(object):
         self.fisica.close()
         
     def fragment(self,data):
-        corte = len(self.bufferdata)//2
-        print(corte)
-        b           = self.bufferdata[:corte]
-        self.buffer = self.bufferdata[corte:]
-        print("pacote n", len(b))
+        print("tamanhor bufferdataAAAA", len(self.bufferdata))
+        if (len(self.bufferdata) >= self.sizeselect):
+            b           = self.bufferdata[:self.sizeselect]
+            self.bufferdata = self.bufferdata[self.sizeselect:]
+        else:
+            b           = self.bufferdata[:]
+            self.bufferdata = b""
+        print("tamanhor b", len(b)) 
         return self.buildDataPacket(b)
 
     def connect(self,data):
@@ -76,9 +79,10 @@ class enlace(object):
             print("Esperando pelo ACK + SYN do Servidor...")
             time.sleep(0.15) 
             if(self.getCommandType() == "ACK"):
+                print("Ack recebido")
                 time.sleep(0.15)
                 if (self.getCommandType() == "SYN"): 
-                    print("SYN + ACK Recebido!")
+                    print("SYN Recebido!")
                     print("Confirmando recebimento do SYN...")
                     self.sendData(self.buildAckPacket())    
                     print("Conexão estabelecida!")
@@ -88,17 +92,19 @@ class enlace(object):
             else:
                 print("Time out")
                 print("Reiniciando conexão")
-                time.sleep(0.15)
+                time.sleep(0.2)
 
         while(len(self.bufferdata)!= 0):
-            pack = self.ragment(data)
+            pack = self.fragment(data)
             while(self.enviardata == False):
                 self.sendData(pack)
-                time.sleep(0.2)
+                time.sleep(0.4)
                 if (self.getCommandType() == "ACK"):
                     self.enviardata = True
                 elif(self.getCommandType() == "nACK"):
                     self.enviardata = False
+            print("next pack")
+            time.sleep(0.2)        
             
     def bind(self):
         self.constructado()
@@ -149,9 +155,9 @@ class enlace(object):
         """
         byterecebido = 0
         bytetotal = 1
-        f = bytearray
+        f = bytes(bytearray())
 
-        while(byterecebido != bytetotal)
+        while(byterecebido < bytetotal):
             head, data = self.rx.getPacket()
             size = len(data)
             
@@ -162,13 +168,14 @@ class enlace(object):
                 head, data = self.rx.getPacket()
                 size = len(data)
             
-            print("Bytes recebidos: ", byterecebido, bytetotal)
-            byterecebido += head[2]
-            bytetotal = head[4]
-
+            byterecebido += len(data) ## verificar len no packote
+            bytetotal = int(binascii.hexlify(head[4:6]), 16)
+            print("Bytes recebidos: ", byterecebido,"/", bytetotal)
+            
             print("ack enviado")
             self.sendData(self.buildAckPacket())
-            f += data 
+            f += data
+            time.sleep(0.2) 
         return f
 
 #---------------------------------------------#
@@ -177,16 +184,16 @@ class enlace(object):
         self.headStart = 0xFF
         self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
                                  "size" / Int16ub,
-                                 "typecommand" / Int8ub,
-                                 "totaldatasize" / Int8ub)
+                                 "totaldatasize" / Int16ub,
+                                 "typecommand" / Int8ub)
         
     #Implementa o head
-    def buildHead(self,dataLen, command, totaldatasize):
+    def buildHead(self,dataLen, totalsize, command):
         head = self.headStruct.build(dict(
                                 start = self.headStart,
                                 size = dataLen,
-                                typecommand = command,
-                                totalsize = totaldatasize)) 
+                                totaldatasize = totalsize,
+                                typecommand = command)) 
         return head
 
 #---------------------------------------------#
@@ -211,31 +218,30 @@ class enlace(object):
     #Cria o Pacote de Dados.
     def buildDataPacket(self,data):
         self.sizepack += len(data)       
-        pack = self.buildHead(self.sizepack,0x00,self.datasize)
+        pack = self.buildHead(self.sizepack,self.datasize,0x00)
         pack += data
         pack += self.buildEop()
-        print(len(data))
         return pack
 
 #---------------------------------------------#
     #Cria o Pacote Comando Syn
     def buildSynPacket(self):
         SYN = 0x10
-        pack = self.buildHead(0,SYN,0)
+        pack = self.buildHead(0,0,SYN)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando Ack
     def buildAckPacket(self):
         ACK = 0x11  
-        pack = self.buildHead(0,ACK,0)
+        pack = self.buildHead(0,0,ACK)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando nAck
     def buildNackPacket(self):
         NACK = 0x12
-        pack = self.buildHead(0,NACK,0)
+        pack = self.buildHead(0,0,NACK)
         pack += self.buildEop()
         return pack
 
@@ -270,7 +276,7 @@ class enlace(object):
     def getSize(self):
         head, _= self.rx.getPacket()
         size = int(binascii.hexlify(head[2:4]), 16)
-        return (size)
+        return (size)       
 
 #---------------------------------------------#
     #CALCULAR OVERHEAD
