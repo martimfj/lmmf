@@ -55,14 +55,14 @@ class enlace(object):
         self.fisica.close()
         
     def fragment(self,data):
-        print("tamanhor bufferdataAAAA", len(self.bufferdata))
+        #print("tamanhor bufferdataAAAA", len(self.bufferdata))
         if (len(self.bufferdata) >= self.sizeselect):
             b           = self.bufferdata[:self.sizeselect]
             self.bufferdata = self.bufferdata[self.sizeselect:]
         else:
             b           = self.bufferdata[:]
             self.bufferdata = b""
-        print("tamanhor b", len(b)) 
+        #print("tamanhor b", len(b)) 
         return self.buildDataPacket(b)
 
     def connect(self,data):
@@ -98,12 +98,14 @@ class enlace(object):
             pack = self.fragment(data)
             while(self.enviardata == False):
                 self.sendData(pack)
-                time.sleep(0.4)
+                print("Enviado:",len(pack), "Bytes")
+                time.sleep(0.3)
                 if (self.getCommandType() == "ACK"):
                     self.enviardata = True
                 elif(self.getCommandType() == "nACK"):
                     self.enviardata = False
-            print("next pack")
+            self.enviardata = False
+            print("Proximo Pacote")
             time.sleep(0.2)        
             
     def bind(self):
@@ -127,7 +129,7 @@ class enlace(object):
                     self.connected = True
                     print("Conexão estabelecida!")
 
-                time.sleep(0.4)
+                time.sleep(0.2)
 
             elif(self.getCommandType() == "nACK"):
                 print("Conexão não estabelecida, erro!")
@@ -157,7 +159,7 @@ class enlace(object):
         bytetotal = 1
         f = bytes(bytearray())
 
-        while(byterecebido < bytetotal):
+        while(byterecebido != bytetotal):
             head, data = self.rx.getPacket()
             size = len(data)
             
@@ -170,12 +172,12 @@ class enlace(object):
             
             byterecebido += len(data) ## verificar len no packote
             bytetotal = int(binascii.hexlify(head[4:6]), 16)
-            print("Bytes recebidos: ", byterecebido,"/", bytetotal)
+            print("Bytes recebidos: ",byterecebido,"/",bytetotal)
             
-            print("ack enviado")
+            print("ACK Enviado")
             self.sendData(self.buildAckPacket())
             f += data
-            time.sleep(0.2) 
+            time.sleep(0.1) 
         return f
 
 #---------------------------------------------#

@@ -133,7 +133,6 @@ class RX(object):
                 head = self.buffer[self.buffer.find(b'\x00\xff'):7] 
                 payload = self.buffer[7:eop]
                 self.packetFound = False
-                print("lalala", len(self.buffer))
                 self.getBuffer(eop + 4)
                 return head, payload
         
