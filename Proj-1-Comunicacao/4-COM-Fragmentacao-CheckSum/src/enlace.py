@@ -163,16 +163,15 @@ class enlace(object):
 
         while(byterecebido != bytetotal):
             head, data = self.rx.getPacket()
-            size = self.getSize(head)
-            CRC_head_value = head[7]
-            CRC_payload_value = head[8]
-            head[6] = 0
-            head[7] = 0
-            CRC_Head = self.getCRC(head)
+            size = int(binascii.hexlify(head[2:4]), 16)
+            CRC_Head = self.getCRC(head[:7])
             CRC_Data = self.getCRC(data)
+            print("Size: ",size,"/",len(data))
+            print("CRC_HEAD: ",CRC_Head,"/",head[7])
+            print("CRC_DATA: ",CRC_Data,"/",head[8])
 
     
-            if(size != len(data) or (CRC_head_value != CRC_Head) or (CRC_payload_value != CRC_Data) ):
+            if(size != len(data) or (CRC_Head != head[7]) or (CRC_Data != head[8]) ):
                 print("Arquivo corrompido")
                 print("nAck Enviado")
                 self.sendData(self.buildNackPacket())
@@ -185,7 +184,7 @@ class enlace(object):
                 print("ACK Enviado")
                 self.sendData(self.buildAckPacket())
                 f += data
-                time.sleep(0.1) 
+                time.sleep(0.2) 
         return f
 
 #---------------------------------------------#
@@ -195,19 +194,20 @@ class enlace(object):
         self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
                                 "size" / Int16ub,
                                 "totaldatasize" / Int16ub,
+                                "typecommand" / Int8ub,
                                 "crc_head" / Int8ub,
-                                "crc_payload" / Int8ub,
-                                "typecommand" / Int8ub)
+                                "crc_payload" / Int8ub
+                                )
         
     #Implementa o head
-    def buildHead(self, dataLen, totalsize,  crc_head_value, crc_payload_value, command):
+    def buildHead(self, dataLen, totalsize, command, crc_head_value, crc_payload_value):
         head = self.headStruct.build(dict(
                                 start = self.headStart,
                                 size = dataLen,
                                 totaldatasize = totalsize,
+                                typecommand = command,
                                 crc_head = crc_head_value,
-                                crc_payload = crc_payload_value, #[7]
-                                typecommand = command))
+                                crc_payload = crc_payload_value))
         return head
 
 #---------------------------------------------#
@@ -231,13 +231,13 @@ class enlace(object):
 #---------------------------------------------#
     #Cria o Pacote de Dados.
     def buildDataPacket(self,data):
-        self.sizepack += len(data)       
-        head = self.buildHead(self.sizepack,self.datasize,0,0,0)
+        size = len(data)       
+        head = self.buildHead(size,self.datasize,0,0,0)
 
-        CRC_Head = self.getCRC(head)
+        CRC_Head = self.getCRC(head[:7])
         CRC_Data = self.getCRC(data)
 
-        head = self.buildHead(self.sizepack,self.datasize,CRC_Head,CRC_Data,0)
+        head = self.buildHead(size,self.datasize,0,CRC_Head,CRC_Data)
 
         pack = head + data
         pack += self.buildEop()
@@ -246,21 +246,21 @@ class enlace(object):
     #Cria o Pacote Comando Syn
     def buildSynPacket(self):
         SYN = 0x10
-        pack = self.buildHead(0,0,0,0,SYN)
+        pack = self.buildHead(0,0,SYN,0,0)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando Ack
     def buildAckPacket(self):
         ACK = 0x11  
-        pack = self.buildHead(0,0,0,0,ACK)
+        pack = self.buildHead(0,0,ACK,0,0)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando nAck
     def buildNackPacket(self):
         NACK = 0x12
-        pack = self.buildHead(0,0,0,0,NACK)
+        pack = self.buildHead(0,0,NACK,0,0)
         pack += self.buildEop()
         return pack
 
@@ -280,11 +280,12 @@ class enlace(object):
         if (self.rx.getIsEmpty() == False):
             head, _= self.rx.getPacket()
             print(head)
-            if head.endswith(b'\x10'):
+            print(head[6])
+            if (head[6] == 16):
                 return ("SYN")
-            elif head.endswith(b'\x11'):
+            elif (head[6] == 17):
                 return ("ACK")
-            elif head.endswith(b'\x12'):
+            elif (head[6] == 18):
                 return ("nACK")
             else:
                 return ("Erro")
