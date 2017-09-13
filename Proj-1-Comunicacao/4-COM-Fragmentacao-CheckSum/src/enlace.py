@@ -34,6 +34,7 @@ class enlace(object):
         self.tx          = TX(self.fisica)
         self.connected   = False
         self.enviardata  = False
+        self.corrupt     = False
         self.bufferdata  = bytes(bytearray())
         self.sizeselect  = 2048
         self.datasize    = 0
@@ -161,23 +162,29 @@ class enlace(object):
 
         while(byterecebido != bytetotal):
             head, data = self.rx.getPacket()
-            size = len(data)
-            
-            while(size != len(data)):
-                print("nack enviado")
+            size = self.getSize(head)
+            CRC_head_value = head[7]
+            CRC_payload_value = head[8]
+            head[7] = 0
+            head[8] = 0
+            CRC_Head = crcCalcula(head)
+            CRC_Data = crcCalcula(data)
+
+    
+            if(size != len(data) or (CRC_head_value != CRC_Head) or (CRC_payload_value != CRC_Data) ):
+                print("Arquivo corrompido")
+                print("nAck Enviado")
                 self.sendData(self.buildNackPacket())
                 time.sleep(0.2)
-                head, data = self.rx.getPacket()
-                size = len(data)
-            
-            byterecebido += len(data) ## verificar len no packote
-            bytetotal = int(binascii.hexlify(head[4:6]), 16)
-            print("Bytes recebidos: ",byterecebido,"/",bytetotal)
-            
-            print("ACK Enviado")
-            self.sendData(self.buildAckPacket())
-            f += data
-            time.sleep(0.1) 
+
+            else:  
+                byterecebido += len(data) ## verificar len no packote
+                bytetotal = int(binascii.hexlify(head[4:6]), 16)
+                print("Bytes recebidos: ",byterecebido,"/",bytetotal)
+                print("ACK Enviado")
+                self.sendData(self.buildAckPacket())
+                f += data
+                time.sleep(0.1) 
         return f
 
 #---------------------------------------------#
@@ -185,17 +192,21 @@ class enlace(object):
     def StructHead(self):
         self.headStart = 0xFF
         self.headStruct = Struct("start" / Int16ub, #Como é 16, o Head começará com \x00\xff + size 
-                                 "size" / Int16ub,
-                                 "totaldatasize" / Int16ub,
-                                 "typecommand" / Int8ub)
+                                "size" / Int16ub,
+                                "totaldatasize" / Int16ub,
+                                "crc_head" / Int8ub,
+                                "crc_payload" / Int8ub,
+                                "typecommand" / Int8ub)
         
     #Implementa o head
-    def buildHead(self,dataLen, totalsize, command):
+    def buildHead(self, dataLen, totalsize,  crc_head_value, crc_payload_value, command):
         head = self.headStruct.build(dict(
-                                start = self.headStart,
+                                start = headStart,
                                 size = dataLen,
                                 totaldatasize = totalsize,
-                                typecommand = command)) 
+                                crc_head = crc_head_value,
+                                crc_payload = crc_payload_value, #[7]
+                                typecommand = command))
         return head
 
 #---------------------------------------------#
@@ -226,24 +237,38 @@ class enlace(object):
         return pack
 
 #---------------------------------------------#
+    #Cria o Pacote de Dados.
+    def buildDataPacket(self,data):
+        self.sizepack += len(data)       
+        head = self.buildHead(self.sizepack,self.datasize,0,0,0)
+
+        CRC_Head = crcCalcula(head)
+        CRC_Data = crcCalcula(data)
+
+        head = self.buildHead(self.sizepack,self.datasize,CRC_Head,CRC_Data,0)
+
+        pack = head + data
+        pack += self.buildEop()
+        return pack
+#---------------------------------------------#
     #Cria o Pacote Comando Syn
     def buildSynPacket(self):
         SYN = 0x10
-        pack = self.buildHead(0,0,SYN)
+        pack = self.buildHead(0,0,0,0,SYN)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando Ack
     def buildAckPacket(self):
         ACK = 0x11  
-        pack = self.buildHead(0,0,ACK)
+        pack = self.buildHead(0,0,0,0,ACK)
         pack += self.buildEop()
         return pack
 
     #Cria o Pacote Comando nAck
     def buildNackPacket(self):
         NACK = 0x12
-        pack = self.buildHead(0,0,NACK)
+        pack = self.buildHead(0,0,0,0,NACK)
         pack += self.buildEop()
         return pack
 
@@ -275,10 +300,9 @@ class enlace(object):
             return("Erro")
 
     #Pega o size expresso no Head
-    def getSize(self):
-        head, _= self.rx.getPacket()
-        size = int(binascii.hexlify(head[2:4]), 16)
-        return (size)       
+    def getSize(self,data):
+        size = int(binascii.hexlify(data[2:4]), 16)
+        return (size)         
 
 #---------------------------------------------#
     #CALCULAR OVERHEAD
@@ -286,3 +310,10 @@ class enlace(object):
         overhead = len(pack)/len(data) 
         print("Overhead:" , overhead)
         return (overhead)
+
+#---------------------------------------------#
+    #Calcula CRC
+    def getCRC(self, data):
+        crc8_func = crcmod.predefined.mkCrcFun('crc-8')
+        crc = crc8_func(data)
+        return(crc)
