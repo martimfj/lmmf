@@ -42,7 +42,8 @@ class enlace(object):
         self.sizepack    = 0
         self.numberpack  = 0
         self.numberpackrecive = 1
-        self.tamanhoenviado = 0 
+        self.tamanhoenviado   = 0
+
     def enable(self):
         """ Enable reception and transmission
         """
@@ -99,52 +100,56 @@ class enlace(object):
                 print("Reiniciando conexão")
                 time.sleep(0.2)
 
-        self.rx.clearBuffer()
         while(len(self.bufferdata)!= 0):
             pack = self.fragment()
             while(self.enviardata == False):
                 print("Enviado:",self.tamanhoenviado, "Bytes")
                 self.sendData(pack)
-                time.sleep(0.15)
                 if (self.getCommandType() == "ACK"):
                     self.enviardata = True
+                    print("Achei ACK")
                 elif(self.getCommandType() == "nACK"):
-                    self.enviardata = False
-                else: 
-                    time.sleep(0.15)
+                    print("Achei nACK")
+                    self.enviardata = False 
+                time.sleep(1)
             self.enviardata = False
+            time.sleep(1)
             print("Proximo Pacote")
-            time.sleep(0.2)        
             
-    def bind(self):
-        self.constructado()
+                        def bind(self):
+            self.constructado()
         """ Estabelece um conexão confiável com o Client - Máquina de Estados Servidor """
         print("Servidor - Iniciando Handshake")
         while(self.connected == False):
             print("Aguardando um Comando do Client")
             if(self.getCommandType() == "SYN"):
                 print("SYN Recebido!")
-
-                while(self.connected == False):
-                    self.sendData(self.buildAckPacket())
-                    print("ACK Enviado")
-                    time.sleep(0.1)
-                    
-                    
-                    self.sendData(self.buildSynPacket())
-                    print("SYN Enviado")
-                    time.sleep(0.1)
-                    
+                SynRecebido = timeit.timeit()
+    
+                self.sendData(self.buildAckPacket())
+                print("ACK Enviado")
+                time.sleep(0.01)
+                                
+                self.sendData(self.buildSynPacket())
+                print("SYN Enviado")
+                time.sleep(0.01)
+                
+                cont = 0
+                while(self.connected == False):    
+                    cont += 1
                     if(self.getCommandType() == "ACK"):
                         print("ACK Recebido!")
                         self.connected = True
                         print("Conexão estabelecida!")
 
                     time.sleep(0.15)
+                    if(cont == 9):
+                        break
 
             elif(self.getCommandType() == "nACK"):
                 print("Conexão não estabelecida, erro!")
                 self.sendData(self.buildNackPacket())
+
 
             elif(self.getCommandType() == "Erro"):
                 print("Erro na transmissão de dados.")
@@ -153,8 +158,8 @@ class enlace(object):
             else:
                 print("Timeout! O Client não respondeu no tempo hábil. Reiniciando Conexão.")
                 self.sendData(self.buildNackPacket())
-            time.sleep(0.1)
-
+            time.sleep(1)
+            
     def constructado(self):
         self.StructEop()
         self.StructHead()
@@ -175,9 +180,9 @@ class enlace(object):
             size = int(binascii.hexlify(head[2:4]), 16)
             CRC_Head = self.getCRC(head[:8])
             CRC_Data = self.getCRC(data)
-            #print("Size: ",size,"/",len(data))
-            #print("CRC_HEAD: ",CRC_Head,"/",head[8])
-            #print("CRC_DATA: ",CRC_Data,"/",head[9])
+            print("Size: ",size,"/",len(data))
+            print("CRC_HEAD: ",CRC_Head,"/",head[8])
+            print("CRC_DATA: ",CRC_Data,"/",head[9])
             
             if(size != len(data) or (CRC_Head != head[8]) or (CRC_Data != head[9]) ):
                 print("Arquivo corrompido")
@@ -185,19 +190,23 @@ class enlace(object):
                 self.sendData(self.buildNackPacket())
                 time.sleep(0.2)
 
-            elif(self.numberpackrecive == head[7]): 
+            else:
                 print("ACK Enviado")
                 self.sendData(self.buildAckPacket())
-                print("number: ",self.numberpackrecive)
-                print("number pack: ", head[7])
-                f += data
-                byterecebido += len(data) ## verificar len no packote
-                bytetotal = int(binascii.hexlify(head[4:6]), 16)
-                print("Bytes recebidos: ",byterecebido,"/",bytetotal)
-                self.numberpackrecive += 1
-                time.sleep(0.1)
-        return f
 
+                if(self.numberpackrecive == head[7]): 
+                    print("number: ",self.numberpackrecive)
+                    print("number pack: ", head[7])
+                    f += data
+                    byterecebido += len(data) ## verificar len no packote
+                    bytetotal = int(binascii.hexlify(head[4:6]), 16)
+                    print("Bytes recebidos: ",byterecebido,"/",bytetotal)
+                    self.numberpackrecive += 1
+                    time.sleep(0.1)
+                else:
+                    print("nAck Enviado")
+                    self.sendData(self.buildNackPacket())
+        return f
 #---------------------------------------------#
     #Define a estrutura do HEAD.
     def StructHead(self):
