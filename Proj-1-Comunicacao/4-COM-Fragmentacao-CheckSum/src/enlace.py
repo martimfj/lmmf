@@ -99,11 +99,12 @@ class enlace(object):
                 print("Time out")
                 print("Reiniciando conexão")
                 time.sleep(0.2)
-
+        
+        packtotal = int(binascii.hexlify(head[4:6]), 16) // self.sizeselect
         while(len(self.bufferdata)!= 0):
             pack = self.fragment()
             while(self.enviardata == False):
-                print("Enviado:",self.tamanhoenviado, "Bytes")
+                print("Enviado: pacote ",self.numberpack,"/",packtotal," : "self.tamanhoenviado, "Bytes")
                 self.sendData(pack)
                 if (self.getCommandType() == "ACK"):
                     self.enviardata = True
@@ -179,13 +180,13 @@ class enlace(object):
             size = int(binascii.hexlify(head[2:4]), 16)
             CRC_Head = self.getCRC(head[:8])
             CRC_Data = self.getCRC(data)
-            print("Size: ",size,"/",len(data))
-            print("CRC_HEAD: ",CRC_Head,"/",head[8])
-            print("CRC_DATA: ",CRC_Data,"/",head[9])
+            packtotal = int(binascii.hexlify(head[4:6]), 16) // self.sizeselect  
             
             if(size != len(data) or (CRC_Head != head[8]) or (CRC_Data != head[9]) ):
-                print("Arquivo corrompido")
-                print("nAck Enviado")
+                print("Size: ",size,"/",len(data))
+                print("CRC_HEAD: ",CRC_Head,"/",head[8])
+                print("CRC_DATA: ",CRC_Data,"/",head[9])
+                print("nAck (Arquivo corrompido)")
                 self.sendData(self.buildNackPacket())
                 time.sleep(0.2)
 
@@ -194,12 +195,10 @@ class enlace(object):
                 self.sendData(self.buildAckPacket())
 
                 if(self.numberpackrecive == head[7]): 
-                    print("number: ",self.numberpackrecive)
-                    print("number pack: ", head[7])
-                    f += data
-                    byterecebido += len(data) ## verificar len no packote
+                    byterecebido += len(data) 
                     bytetotal = int(binascii.hexlify(head[4:6]), 16)
-                    print("Bytes recebidos: ",byterecebido,"/",bytetotal)
+                    print("Recebido: pacote", number,"/",packtotal ," : ",byterecebido,"/",bytetotal)
+                    f += data
                     self.numberpackrecive += 1
                     time.sleep(0.1)
                 else:
@@ -299,7 +298,6 @@ class enlace(object):
     def getCommandType(self):
         if (self.rx.getIsEmpty() == False):
             head, _= self.rx.getPacket()
-            print(head)
             if (len(head) > 6):
                 if (head[6] == 16):
                     return ("SYN")
