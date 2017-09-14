@@ -42,7 +42,7 @@ class enlace(object):
         self.sizepack    = 0
         self.numberpack  = 0
         self.numberpackrecive = 1
-         
+        self.tamanhoenviado = 0 
     def enable(self):
         """ Enable reception and transmission
         """
@@ -65,7 +65,8 @@ class enlace(object):
             self.bufferdata = self.bufferdata[self.sizeselect:]
         else:
             b           = self.bufferdata[:]
-            self.bufferdata = b"" 
+            self.bufferdata = b""
+        self.tamanhoenviado = len(b) 
         return self.buildDataPacket(b)
 
     def connect(self,data):
@@ -102,7 +103,7 @@ class enlace(object):
         while(len(self.bufferdata)!= 0):
             pack = self.fragment()
             while(self.enviardata == False):
-                print("Enviado:",len(pack), "Bytes")
+                print("Enviado:",self.tamanhoenviado, "Bytes")
                 self.sendData(pack)
                 time.sleep(0.15)
                 if (self.getCommandType() == "ACK"):
