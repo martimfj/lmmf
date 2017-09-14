@@ -100,17 +100,15 @@ class enlace(object):
                 print("Reiniciando conexão")
                 time.sleep(0.2)
         
-        packtotal = int(binascii.hexlify(head[4:6]), 16) // self.sizeselect
+        packtotal = (len(data) // self.sizeselect) + 1
         while(len(self.bufferdata)!= 0):
             pack = self.fragment()
             while(self.enviardata == False):
-                print("Enviado: pacote ",self.numberpack,"/",packtotal," : "self.tamanhoenviado, "Bytes")
+                print("Enviado: pacote ",self.numberpack,"/",packtotal," : ",self.tamanhoenviado, "Bytes")
                 self.sendData(pack)
                 if (self.getCommandType() == "ACK"):
                     self.enviardata = True
-                    print("Achei ACK")
                 elif(self.getCommandType() == "nACK"):
-                    print("Achei nACK")
                     self.enviardata = False 
                 time.sleep(1)
             self.enviardata = False
@@ -197,7 +195,7 @@ class enlace(object):
                 if(self.numberpackrecive == head[7]): 
                     byterecebido += len(data) 
                     bytetotal = int(binascii.hexlify(head[4:6]), 16)
-                    print("Recebido: pacote", number,"/",packtotal ," : ",byterecebido,"/",bytetotal)
+                    print("Recebido: pacote", head[7],"/",packtotal ," : ",byterecebido,"/",bytetotal)
                     f += data
                     self.numberpackrecive += 1
                     time.sleep(0.1)
