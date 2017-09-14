@@ -41,6 +41,7 @@ class enlace(object):
         self.datasize    = 0
         self.sizepack    = 0
         self.numberpack  = 0
+        self.numberpackrecive = 1
          
     def enable(self):
         """ Enable reception and transmission
@@ -57,7 +58,7 @@ class enlace(object):
         time.sleep(1)
         self.fisica.close()
         
-    def fragment(self,data):
+    def fragment(self):
         self.numberpack += 1
         if (len(self.bufferdata) >= self.sizeselect):
             b           = self.bufferdata[:self.sizeselect]
@@ -79,16 +80,17 @@ class enlace(object):
             self.sendData(self.buildSynPacket())
             print("SYN Enviado!")
             print("Esperando pelo ACK + SYN do Servidor...")
-            time.sleep(0.15) 
+            time.sleep(0.2) 
             if(self.getCommandType() == "ACK"):
                 print("Ack recebido")
-                time.sleep(0.05)
-                if (self.getCommandType() == "SYN"): 
-                    print("SYN Recebido!")
-                    print("Confirmando recebimento do SYN...")
-                    self.sendData(self.buildAckPacket())    
-                    print("Conexão estabelecida!")
-                    self.connected = True
+                time.sleep(0.15)
+                while(self.connected == False):
+                    if (self.getCommandType() == "SYN"): 
+                        print("SYN Recebido!")
+                        print("Confirmando recebimento do SYN...")
+                        self.sendData(self.buildAckPacket())    
+                        print("Conexão estabelecida!")
+                        self.connected = True
             elif(self.getCommandType() == "Erro"):
                 print("Erro na transmissão de dados. Reconectando...")
             else:
@@ -96,11 +98,12 @@ class enlace(object):
                 print("Reiniciando conexão")
                 time.sleep(0.2)
 
+        self.rx.clearBuffer()
         while(len(self.bufferdata)!= 0):
-            pack = self.fragment(data)
+            pack = self.fragment()
             while(self.enviardata == False):
-                self.sendData(pack)
                 print("Enviado:",len(pack), "Bytes")
+                self.sendData(pack)
                 time.sleep(0.15)
                 if (self.getCommandType() == "ACK"):
                     self.enviardata = True
@@ -121,19 +124,22 @@ class enlace(object):
             if(self.getCommandType() == "SYN"):
                 print("SYN Recebido!")
 
-                self.sendData(self.buildAckPacket())
-                print("ACK Enviado")
-                time.sleep(0.1)
+                while(self.connected == False):
+                    self.sendData(self.buildAckPacket())
+                    print("ACK Enviado")
+                    time.sleep(0.1)
+                    
+                    
+                    self.sendData(self.buildSynPacket())
+                    print("SYN Enviado")
+                    time.sleep(0.1)
+                    
+                    if(self.getCommandType() == "ACK"):
+                        print("ACK Recebido!")
+                        self.connected = True
+                        print("Conexão estabelecida!")
 
-                self.sendData(self.buildSynPacket())
-                print("SYN Enviado")
-
-                if(self.getCommandType() == "ACK"):
-                    print("ACK Recebido!")
-                    self.connected = True
-                    print("Conexão estabelecida!")
-
-                time.sleep(0.2)
+                    time.sleep(0.15)
 
             elif(self.getCommandType() == "nACK"):
                 print("Conexão não estabelecida, erro!")
@@ -162,34 +168,32 @@ class enlace(object):
         byterecebido = 0
         bytetotal = 1
         f = bytes(bytearray())
-
-        while(byterecebido != bytetotal):
+        
+        while(byterecebido <= bytetotal + 4000):
             head, data = self.rx.getPacket()
             size = int(binascii.hexlify(head[2:4]), 16)
             CRC_Head = self.getCRC(head[:8])
             CRC_Data = self.getCRC(data)
-            print("Size: ",size,"/",len(data))
-            print("CRC_HEAD: ",CRC_Head,"/",head[8])
-            print("CRC_DATA: ",CRC_Data,"/",head[9])
-            print(head[7])
-
-    
+            #print("Size: ",size,"/",len(data))
+            #print("CRC_HEAD: ",CRC_Head,"/",head[8])
+            #print("CRC_DATA: ",CRC_Data,"/",head[9])
+            
             if(size != len(data) or (CRC_Head != head[8]) or (CRC_Data != head[9]) ):
                 print("Arquivo corrompido")
                 print("nAck Enviado")
                 self.sendData(self.buildNackPacket())
-                time.sleep(0.1)
+                time.sleep(0.2)
 
-            else:  
+            elif(self.numberpackrecive == head[7]): 
+                print("ACK Enviado")
+                self.sendData(self.buildAckPacket())
+                print("number: ",self.numberpackrecive)
+                print("number pack: ", head[7])
+                f += data
                 byterecebido += len(data) ## verificar len no packote
                 bytetotal = int(binascii.hexlify(head[4:6]), 16)
                 print("Bytes recebidos: ",byterecebido,"/",bytetotal)
-                print("ACK Enviado")
-                self.sendData(self.buildAckPacket())
-                
-                if (self.numberpack == head[7]):
-                    self.numberpack += 1
-                    f += data
+                self.numberpackrecive += 1
         return f
 
 #---------------------------------------------#
@@ -285,14 +289,15 @@ class enlace(object):
     def getCommandType(self):
         if (self.rx.getIsEmpty() == False):
             head, _= self.rx.getPacket()
-            if (head[6] == 16):
-                return ("SYN")
-            elif (head[6] == 17):
-                return ("ACK")
-            elif (head[6] == 18):
-                return ("nACK")
-            else:
-                return ("Erro")
+            if (len(head) > 6):
+                if (head[6] == 16):
+                    return ("SYN")
+                elif (head[6] == 17):
+                    return ("ACK")
+                elif (head[6] == 18):
+                    return ("nACK")
+                else:
+                    return ("Erro")
         else:
             time.sleep(0.3)
             return("Erro")
