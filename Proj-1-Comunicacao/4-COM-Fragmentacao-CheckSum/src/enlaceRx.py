@@ -136,4 +136,4 @@ class RX(object):
                 self.getBuffer(eop + 4)
                 return head, payload
         
-            time.sleep(0.05)
+            time.sleep(0.1)

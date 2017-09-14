@@ -80,7 +80,7 @@ class enlace(object):
             self.sendData(self.buildSynPacket())
             print("SYN Enviado!")
             print("Esperando pelo ACK + SYN do Servidor...")
-            time.sleep(0.2) 
+            time.sleep(0.5) 
             if(self.getCommandType() == "ACK"):
                 print("Ack recebido")
                 time.sleep(0.15)
@@ -169,7 +169,7 @@ class enlace(object):
         bytetotal = 1
         f = bytes(bytearray())
         
-        while(byterecebido <= bytetotal + 4000):
+        while(byterecebido != bytetotal):
             head, data = self.rx.getPacket()
             size = int(binascii.hexlify(head[2:4]), 16)
             CRC_Head = self.getCRC(head[:8])
@@ -194,6 +194,7 @@ class enlace(object):
                 bytetotal = int(binascii.hexlify(head[4:6]), 16)
                 print("Bytes recebidos: ",byterecebido,"/",bytetotal)
                 self.numberpackrecive += 1
+                time.sleep(0.1)
         return f
 
 #---------------------------------------------#
@@ -289,6 +290,7 @@ class enlace(object):
     def getCommandType(self):
         if (self.rx.getIsEmpty() == False):
             head, _= self.rx.getPacket()
+            print(head)
             if (len(head) > 6):
                 if (head[6] == 16):
                     return ("SYN")
