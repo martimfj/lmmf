@@ -41,4 +41,4 @@ def StructHead(self):
 Os dados do payload agora tem um um limite de tamanho de 2035 bytes, para que o pacote todo tenha 2048 bytes, visto que o *Head* tem 9 bytes e o EOP 4 bytes.
 
 ## Tempo de Timeout
-O tempo de Timeout para a conexão foi estipulado para ser de X segundos, porque o código demora X segundos para 
+O tempo de Timeout para a conexão foi estipulado para ser de 2 segundos, para estabilizar a interação entre envio e recebimento, dado que cada ponta da conexâo tem seu delay de execusão 
