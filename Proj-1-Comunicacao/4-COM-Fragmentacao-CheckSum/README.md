@@ -1,105 +1,43 @@
----
-title: Camada Física -  Projeto 4 - Fragmentação e Detecção de Erros
-author: Rafael Corsi - rafael.corsi@insper.edu.br
-date: Agosto - 2017
----
+# Camada Física - Projeto 1 - COM-Fragmentação e CheckSum
+Leonardo Medeiros e Martim Ferrera José
 
-*Entrega : Até o começo da aula do dia 07/9*
+Nessa etapa do projeto, foi implementado a fragmentação dos dados na camada de enlace para possibilitar o reenvio mais eficiente dos dados, caso um alguma anomalia for detectada. Para a detecção de anomalias (erros) na transmissão, foi implementado um CRC (*Cyclic redundancy check*) para o *Head* e outro para o *payload*. O Servidor analisa os CRC's e envia um ACK/NACK em resposta se o pacote foi recebido corretamente ou não.
 
-![Etapa Atual](doc/etapaAtualPilhaEnlace.png){ width=30% }
+## Funcionamento da Fragmentação
+Explicação da Fragmentação
 
-# Projeto 4 : Fragmentamcão e Detecção de Erros
 
-Implementar a fragmentação dos dados na camada de enlace para possibilitar o reenvio mais eficiente caso algum erro nos dados for detectado. Para a deteção de erros na transmissão, adicione um CRC ao HEAD e outro ao Payload, enviando um ACK/NACK em resposta se o pacote foi recebido corretamente ou não.
+## Funcionamento do CRC
+O *cyclic redundancy check* (CRC) é um método de detecção de erros, que detecta a mudança acidental em cadeia de dados. Esse algoritmo baseia-se na divisão de polinômios, isto é, ele interpreta os dados como se fossem coeficientes de um polinômio e realiza uma divisão binária aplicando um XOR a cada termo. Ou seja, nesta divisão o dividendo é igual aos dados, o divisor é o polinômio "chave" e o resto da divisão é igual ao CRC. 
 
-- [Lista aula 7 ](https://github.com/Insper/Camada-Fisica-Computacao/blob/master/2-Aulas/7-Fragmentacao/7-Lista-Fragmentacao.pdf)
+:exclamation: Quanto mais complexo (maior o grau) do polinômio, melhor será o tratamento do erro. 
 
-- [Lista aula 8 ](https://github.com/Insper/Camada-Fisica-Computacao/blob/master/2-Aulas/8-Deteccao-De-Erros/8-Lista-Deteccao.pdf)
+O polinômio escolhido para servir como "chave", foi *x^8+x^2+x^1+1*, que se traduz em binário para *0x107*, que é o **CRC-8**.
 
-## Dicas
+Este polinômio foi escolhido por ser muito simples e eficiente, resultando em um CRC de apenas 8 bits de tamanho, resultando em um menor Overhead, comparando com outros CRC's de maior grau.
 
-Algumas dicas de implementação podem ser lidas em : 
- 
-- [Dicas](https://github.com/Insper/Camada-Fisica-Computacao/blob/master/3-Projetos/4-COM-Fragmentacao-Detecao/4-COM-Dicas-Fragmentaao-Deteccao.pdf)
-  
-# Requisitos
+Neste protocolo, o CRC é calculado em cada pacote, para o Head e para o Payload a fim de detectar erros nestes dois lugares.
 
-Requisitos de projeto :
+Para implementar o CRC, foi utilizado o pacote [crcmod](http://crcmod.sourceforge.net/index.html) para python 3. Sendo facilmente instalado por meio do `pip install crcmod`.
 
-1. Fragmentação 
-    - O envio de um payload deve ser fragmentado em pacotes com no **máximo 2048 bytes**.
-        - (configurar esse valor na inicialização do enlace)
-    - O fragmento deve ser reconstruido pela camada de enlace
-    - Cada fragmento enviado deve vir acompanhado de uma resposta : ACK e NACK
-    - A fragmentação/ desfragmentação deve ser transparente para a aplicação
-    
-    1. Retransmissão
-        - Caso o transmissor receba um NACK deve reenviar o pacote.
-        - Caso o transmissor não receba uma resposta em x segundos (timeout) deve reenviar o pacote.
-    
-1. Detecção de erros
-    - Pacote :
-        - Implementar um CRC para o HEAD
-        - Implementar um CRC para o payload
-    - Recebimento :
-        - Todo pacote recebido deve ser verificado :
-             - Se o tamanho do payload confere com o tamanho enviado no HEAD
-             - Se o CRC do head calculado confere com o CRC enviado no HEAD
-             - Se o CRC do payload calculado confere com o CRC enviado para o payload
-        - Se houver falha em algum dos casos anteriores, responder com o NACK e aguardar o reenvio do pacote.
-        
-1. Software
-    - A enlace (recepção E transmissão) deve imprimir na tela algo parecido como :
-    
-```
-(Envio)
-Enviando 6170 bytes em 4 pacotes :
-    - pacote 1/4 : 2048 bytes
-      - ACK (ok)
-    - pacote 2/4 : 2048 bytes
-      - ACK (ok)
-    - pacote 3/4 : 2048 bytes
-      - NACK (falha)
-    - pacote 3/4 : 2048
-      - ACK (ok)
-    - pacote 4/4 : 26 bytes
-      - TimeOut (falha)
-    - pacote 4/4 : 26 bytes
-      - ACK (ok)
-Final da transmissão
+## Estrutura do pacote de dados
+Para implementar a fragmentação e o CRC, a estrutura de pacote de dados teve o Head e o Payload remodelados da seguinte forma:
+
+#### Head:
+```python
+def StructHead(self):
+  self.headStart = 0xFF
+  self.headStruct = Struct("start" / Int16ub, "size" / Int16ub, "totalDataSize"  / Int16ub,
+                          "typeCommand" / Int8ub, "crc_head" / Int8ub, "crc_payload" / Int8ub)
 ```
 
-1. Documentação
-    - Descrever a framentação 
-    - Descrever os campos do HEAD
-    - Descrever o tempo de timeout utilizado (e o porque desse valor).
-    - Explicar qual polinómio foi utilizado para o CRC.
-    
-## Itens extras
+**Campos novos** :new:
+1. totalDateSize: representa o tamanho total do dado a ser transferido.
+1. crc_head: representa o CRC do Head calculado com CRC-8
+1. crc_payload: representa o CRC do Head calculado com CRC-8
 
-1. Implementar o Go-Back-N
-1. Fazer a implementação própria do CRC
+#### Payload:
+Os dados do payload agora tem um um limite de tamanho de X bytes. Ou seja, o *size* é no máximo X, para que o pacote todo tenha 2048 bytes.
 
-## Validação
-
-- Inicializar o Client e não conectar o Server. Nenhuma imagem deve ser enviada.
-- Após algum tempo inicializar o Server, deve acontecer o handshake e a transferência deve ser executada.
-- Durante a transmissão, desconectar o fio que transmite dados entre Client e Server
-    - Server deve responder com nACK
-    - Client deve retransmitir o pacote.
-
-## Rubricas
-
-| Nota máxima | Descritivo                                                |
-|-------------|-----------------------------------------------------------|
-| A           | - Entregue no prazo                                       |
-|             | - Implementado extras                                     |
-| B           | - Entregue no prazo                                       |
-|             | - Implementado requisitos necessários                     |
-| C           | - Entregue fora do prazo                                  |
-|             | - Implementando requisitos necessários                    |
-| D           | - Nem todos os requisitos necessários foram implementados |
-| I           | - Não entregue                                            |
-
-
-
+## Tempo de Timeout
+Descrever e Justificar
