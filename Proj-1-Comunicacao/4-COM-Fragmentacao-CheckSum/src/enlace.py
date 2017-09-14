@@ -116,15 +116,14 @@ class enlace(object):
             time.sleep(1)
             print("Proximo Pacote")
             
-                        def bind(self):
-            self.constructado()
+    def bind(self):
+        self.constructado()
         """ Estabelece um conexão confiável com o Client - Máquina de Estados Servidor """
         print("Servidor - Iniciando Handshake")
         while(self.connected == False):
             print("Aguardando um Comando do Client")
             if(self.getCommandType() == "SYN"):
                 print("SYN Recebido!")
-                SynRecebido = timeit.timeit()
     
                 self.sendData(self.buildAckPacket())
                 print("ACK Enviado")
@@ -159,7 +158,7 @@ class enlace(object):
                 print("Timeout! O Client não respondeu no tempo hábil. Reiniciando Conexão.")
                 self.sendData(self.buildNackPacket())
             time.sleep(1)
-            
+
     def constructado(self):
         self.StructEop()
         self.StructHead()
