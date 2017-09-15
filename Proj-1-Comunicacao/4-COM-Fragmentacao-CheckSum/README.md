@@ -41,4 +41,9 @@ def StructHead(self):
 Os dados do payload agora tem um um limite de tamanho de 2035 bytes, para que o pacote todo tenha 2048 bytes, visto que o *Head* tem 9 bytes e o EOP 4 bytes.
 
 ## Tempo de Timeout
-O tempo de Timeout para a conexão foi estipulado para ser de 2 segundos, para estabilizar a interação entre envio e recebimento, dado que cada ponta da conexâo tem seu delay de execusão 
+O tempo de Timeout para a conexão foi estipulado para ser de 2 segundos, para estabilizar a interação entre envio e recebimento, dado que cada ponta da conexâo tem seu delay de execusão
+
+## Melhorias e futuras implementações
+1. Go-N-Back ou Selective Repeat ARQ
+1. Implementação Própria do CRC, com mudança para CRC-16
+1. Timeout variando de acordo com o tempo médio de resposta entre os nós durante o Handshake e transmissão de dados.
